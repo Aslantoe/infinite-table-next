@@ -1,0 +1,9 @@
+.range-render {
+    position: relative;
+  
+    .range-render__item {
+      position: absolute;
+      will-change: transform;
+    }
+  }
+  

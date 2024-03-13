@@ -1,0 +1,10 @@
+@mixin border-1px($border-color){
+  border-bottom: 1px solid $border-color;
+  @media screen and (min-device-pixel-ratio: 2),  (-webkit-min-device-pixel-ratio: 2){
+    border-bottom: (1px / 2) solid $border-color;
+  }
+
+  @media screen and (min-device-pixel-ratio: 3),  (-webkit-min-device-pixel-ratio: 3){
+    border-bottom: (1px / 3) solid $border-color;
+  }
+}

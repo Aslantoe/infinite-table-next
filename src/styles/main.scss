@@ -1,0 +1,321 @@
+@import 'variables.scss';
+@import "mixins.scss";
+
+.range-render {
+  position: relative;
+
+  .range-render__item {
+    position: absolute;
+    will-change: transform;
+  }
+}
+
+.infinite-table__tooltip {
+  pointer-events: none;
+  z-index: 1999;
+  position: absolute;
+  color: white;
+  background: $table-tooltip-background;
+  min-width: 150px;
+  max-width: 400px;
+  border-radius: 3px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  text-align: center;
+
+  &[data-popper-placement^="top"] {
+    .tooltip-arrow {
+      bottom: -4px;
+
+      &, &::before {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        z-index: -1;
+      }
+
+      &::before {
+        content: '';
+        transform: rotate(45deg);
+        background: $table-tooltip-background;
+      }
+    }
+  }
+
+  &[x-placement^="bottom"] .tooltip-arrow {
+    border-width: 0 5px 5px 5px;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-top-color: transparent;
+    top: -5px;
+    left: calc(50% - 5px);
+  }
+
+  .tooltip-inner {
+    word-break: break-word;
+  }
+}
+
+.infinite-table {
+  height: 100%;
+  overflow: hidden;
+  background-color: $table-background-color;
+  color: $table-text-color;
+  font-size: $table-font-size;
+  position: relative;
+  outline: none;
+}
+
+.infinite-table__empty-content {
+  user-select: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.infinite-table--scrollable {
+  overflow-x: auto;
+  overflow-y: auto;
+  min-height: 100%;
+  /**
+  FIXME: 开启此CSS会导致白屏问题
+   */
+  //will-change: transform;
+}
+
+.infinite-table__columns-define {
+  display: none;
+}
+
+.infinite-table__table-header {
+  box-sizing: border-box;
+  background-color: $table-header-background-color;
+  color: $table-header-text-color;
+  display: flex;
+  position: relative;
+  z-index: 2;
+  border-bottom: $table-header-border-bottom;
+  user-select: none;
+
+  .infinite-table__table-header__sortable {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    height: 34px;
+    width: 24px;
+    vertical-align: middle;
+    cursor: pointer;
+    overflow: initial;
+    position: relative;
+  }
+
+  &.infinite-table__table-header--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  .infinite-table__cell {
+    border-right: 1px solid transparent;
+
+    .cell-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      span {
+        min-width: 0;
+        word-break: keep-all;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+    }
+
+    &.hover {
+      border-right: 1px solid white;
+    }
+  }
+}
+
+.infinite-table__table-header, .infinite-table__body {
+  width: 100%;
+}
+
+
+.infinite-table__sortable {
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+  position: absolute;
+  left: 7px;
+
+  &.descending {
+    border-top-color: $table-sortable-color;
+    bottom: 7px;
+  }
+
+  &.ascending {
+    border-bottom-color: $table-sortable-color;
+    top: 5px;
+  }
+
+  &.descending.active {
+    border-top-color: $table-sortable-color--active;
+  }
+
+  &.ascending.active {
+    border-bottom-color: $table-sortable-color--active;
+  }
+}
+
+.infinite-table__row--recycle {
+  position: absolute;
+  will-change: transform;
+  contain: layout;
+  z-index: 1;
+
+  &.invisible {
+    display: none;
+  }
+}
+
+.infinite-table__body {
+  position: relative;
+
+  .tooltip-reference {
+    position: absolute;
+    z-index: -99999;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  /* 给行添加边框 */
+  .infinite-table__cell {
+    @include border-1px($table-row-divider-color);
+  }
+}
+
+.infinite-table__body__wrapper {
+  overflow: auto;
+}
+
+.infinite-table__cell {
+  box-sizing: border-box;
+  text-align: left;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+  /* 设置flex-grow和flex-shrink为0避免cell意外收缩   */
+  flex: 0 0 auto;
+
+  &.infinite-table__cell--ellipsis {
+    .cell-content {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &.infinite-table__cell--pointer {
+    cursor: pointer;
+  }
+
+  &.infinite-table__cell--fixed {
+    position: sticky;
+    background: inherit;
+    z-index: 1000;
+  }
+
+  &.infinite-table__cell--resizeable {
+    cursor: col-resize;
+  }
+
+  &.infinite-table__cell--selected {
+    box-shadow: inset 1px 1px 0 0 $table-cell-selected-color,
+    inset -1px -1px 0 0 $table-cell-selected-color;
+  }
+
+  .cell-content {
+    width: 100%;
+    line-height: 24px;
+    box-sizing: border-box;
+    display: block;
+    padding: 0 10px;
+    position: relative;
+  }
+}
+
+.infinite-table__cell__selection {
+  .cell-content {
+    padding: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+  }
+
+  .infinite-table__cell__content--selection {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.infinite-table__cell--checkbox {
+  margin: 0 auto;
+}
+
+.infinite-table__row {
+  display: flex;
+  user-select: none;
+  background: $table-background-color;
+
+  &.infinite-table__row--striped {
+    background-color: $table-row-background-color--striped;
+  }
+
+  &.infinite-table__row--fixed {
+    position: sticky;
+    z-index: 1001;
+    background: inherit;
+  }
+
+  /**
+    因为css优先级的原因，hover和selected样式需要在striped下面写
+   */
+  &:hover {
+    .infinite-table__cell {
+      background-color: $table-row-hover-color !important;
+    }
+  }
+
+  &.infinite-table__row--selected {
+    color: $table-cell-selected-text-color;
+
+    .infinite-table__cell {
+      background-color: $table-row-selected-color !important;
+    }
+  }
+}
+
+.infinite-table__resize-indicator {
+  position: absolute;
+  left: 200px;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px solid #ebeef5;
+  z-index: 1002;
+}
+

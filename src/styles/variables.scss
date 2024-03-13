@@ -1,0 +1,29 @@
+$table-text-color: #fff !default;
+$table-header-text-color: #fff !default ;
+
+$table-background-color: #243443 !default;
+$table-header-background-color: #2d2d2d !default;
+
+$table-row-background-color: #243443 !default;
+$table-row-background-color--striped: #2d2d2d !default;
+
+/* table的字号 */
+$table-font-size: 14px !default;
+
+/* table表头的border-bottom */
+$table-header-border-bottom: 1px solid #252629 !default;
+/* 行hover高亮  */
+$table-row-hover-color: #2050A0 !default;
+/* 行选中高亮  */
+$table-row-selected-color: #2050A0 !default;
+/* 单元格选中的颜色 */
+$table-cell-selected-color: #FFFFFF !default;
+$table-cell-selected-text-color: #ffffff !default;
+
+$table-sortable-color: #fefefe !default;
+/* 可排序列箭头颜色  */
+$table-sortable-color--active: $table-row-hover-color !default;
+$table-tooltip-background: #3c9afb !default;
+
+/* 行之间分割线的颜色 */
+$table-row-divider-color: #252629 !default;
