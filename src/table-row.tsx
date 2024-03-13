@@ -8,9 +8,11 @@ import {
   RowItemType,
   TableOptions,
 } from "@/common/types";
-import TableStore from "@/table-store";
+import useTableStore from "@/table-store";
+import useTableData from "@/hooks/useTableDataHooks";
 import { overflowDetection } from "@/utils/layout";
-import RangeRender from "./render/range-render.vue";
+import RangeRender from "@/render/range-render.vue";
+import useTableColumn from "@/hooks/useTbaleColumnHooks";
 
 function normalizeClass(
   classObj: string | { [key: string]: boolean } | string[]
@@ -28,6 +30,9 @@ function normalizeClass(
   }
   return classObj;
 }
+/**
+ * table-row 组件
+ */
 
 const TableRow = defineComponent({
   props: {
@@ -46,10 +51,17 @@ const TableRow = defineComponent({
   },
 
   setup(props) {
-    const tableStore: any = inject(tableStoreInjectKey);
 
+    // const tableStore: any = inject(tableStoreInjectKey);
     const tableOptions: any = inject(tableOptionsInjectKey);
 
+    const { isSameRow, _isSameColumn, layoutSize } = useTableStore(tableOptions)
+    const { isRowSelected, selectedColumn, focusedRow } = useTableData()
+    const { getFixedColumnStyle, leftFixedColumns,
+      rightFixedColumns,
+      mainColumns,
+      leftFixedColumnWidth,
+      rightFixedColumnWidth, allColumnsWidth } = useTableColumn()
     let dragoverColumnItem: TableColumnItem;
 
     const getExtraRowAttrs = (
@@ -63,7 +75,7 @@ const TableRow = defineComponent({
           ? rowExtraAttrs(rowItem, index)
           : rowExtraAttrs;
       // FIXME: 修改判断行是否选中的方法
-      const rowSelected = tableStore.isRowSelected(rowItem);
+      const rowSelected = isRowSelected(rowItem);
       return {
         style: {
           ...extraAttrs.style,
@@ -78,11 +90,18 @@ const TableRow = defineComponent({
         },
       };
     };
-
+    /**
+     * 鼠标离开单元格，隐藏tooltip
+     */
     const handleMouseLeaveCell = () => {
-      tableStore.$emit("hide-tooltip");
+      emitter.emit("hide-tooltip");
     };
-
+    /**
+     * 鼠标进入单元格事件
+     * @param data 
+     * @param column 
+     * @param event 
+     */
     const handleMouseEnterCell = (
       data: any,
       column: TableColumnItem,
@@ -103,24 +122,19 @@ const TableRow = defineComponent({
                 row: data,
                 options: column,
                 rowIndex: props.index,
-                tableStore: tableStore,
+                tableStore: useTableStore,
               })
             ) : (
               <span>{contentElement?.textContent}</span>
             );
-            tableStore.$emit(
-              "show-tooltip",
-              currentTarget,
-              vnode,
-              column.tooltipWrapperClass(data)
-            );
+            emitter.emit( "show-tooltip", {currentTarget: currentTarget, vnode: vnode, data: column.tooltipWrapperClass(data)});
           }
         }
       }
     };
 
     const getFixedStyle = (column: TableColumnItem) => {
-      return tableStore.getFixedColumnStyle(column);
+      return getFixedColumnStyle(column);
     };
 
     const dispatchRowEvent = (
@@ -130,8 +144,7 @@ const TableRow = defineComponent({
       e: MouseEvent,
       rowIndex: number
     ) => {
-
-      NotifyMixin.notify("InfiniteTable", eventName, data, column, e, rowIndex);
+      emitter.emit("InfiniteTable", { eventName, data, column, e, rowIndex });
     };
 
     const renderColumnCell = (
@@ -139,7 +152,7 @@ const TableRow = defineComponent({
       data: RowItemType,
       columnItem: TableColumnItem,
       index: number,
-      tableStore: typeof TableStore
+      tableStore: typeof useTableStore
     ) => {
       try {
         return columnRender.call(h, {
@@ -158,16 +171,15 @@ const TableRow = defineComponent({
     };
 
     const renderTableCell = (prop: { data: TableColumnItem }) => {
-      const { focusedRow, selectedColumn } = tableStore;
       const { highlightCurrentCell, rowHeight } = tableOptions;
       const { data: columnOption } = prop;
       const { columnRender } = columnOption;
       const cellSelected =
         highlightCurrentCell &&
-        selectedColumn &&
-        focusedRow &&
-        tableStore.isSameColumn(selectedColumn, columnOption) && // FIXME: 研究这俩接口是否有存在的必要
-        tableStore.isSameRow(props.data, focusedRow);
+        selectedColumn.value &&
+        focusedRow.value &&
+        _isSameColumn(selectedColumn.value, columnOption) && // FIXME: 研究这俩接口是否有存在的必要
+        isSameRow(props.data, focusedRow.value);
       let extraAttrs: ElementExtraAttrs = {};
       if (columnOption.columnExtraAttrs) {
         extraAttrs = columnOption.columnExtraAttrs(
@@ -245,21 +257,12 @@ const TableRow = defineComponent({
               props.data,
               columnOption,
               props.index,
-              tableStore
+              useTableStore
             )}
           </div>
         </div>
       );
     };
-
-    const { layoutSize } = tableStore;
-    const {
-      leftFixedColumns,
-      rightFixedColumns,
-      mainColumns,
-      leftFixedColumnWidth,
-      rightFixedColumnWidth,
-    } = tableStore;
 
     const extraAttrs = getExtraRowAttrs(props.data, props.index);
     return (
@@ -270,7 +273,7 @@ const TableRow = defineComponent({
         {...{
           style: {
             ...extraAttrs.style,
-            width: `${tableStore.allColumnsWidth}px`,
+            width: `${allColumnsWidth}px`,
             height: `${tableOptions.rowHeight}px`,
           },
           attrs: extraAttrs.attrs,
@@ -319,15 +322,15 @@ const TableRow = defineComponent({
           },
         }}
       >
-        {leftFixedColumns.map((column) => renderTableCell({ data: column }))}
+        {leftFixedColumns.value.map((column) => renderTableCell({ data: column }))}
         <RangeRender
-            style={{ width: `${tableStore.allColumnsWidth}px` }}
+            style={{ width: `${allColumnsWidth.value}px` }}
             dataKey={(item: TableColumnItem) => item.key}
             data={mainColumns}
             direction="horizontal"
             sizeField="width"
             offset={props.offsetX}
-            viewportSize={layoutSize.viewportWidth - leftFixedColumnWidth - rightFixedColumnWidth}
+            viewportSize={layoutSize.value.viewportWidth - leftFixedColumnWidth.value - rightFixedColumnWidth.value}
             {
               ...{
                 scopedSlots: {
@@ -336,7 +339,7 @@ const TableRow = defineComponent({
               }
             }
           />
-        {rightFixedColumns.map((column) => renderTableCell({ data: column }))}
+        {rightFixedColumns.value.map((column) => renderTableCell({ data: column }))}
       </div>
     );
   },

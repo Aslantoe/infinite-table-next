@@ -9,10 +9,16 @@ export default function useTableSelection(
   selectedRows: Ref<RowItemType[]>
 ) {
 
+  /**
+   * 清除选中的行数据
+   */
   const clearSelectedRows = () => {
     selectedRows.value = [];
   };
-  
+  /**
+   * 添加选中行
+   * @param rows 
+   */
   const addSelectedRows = (...rows: RowItemType[]) => {
     rows.forEach((item, index) => {
       if (!isRowSelected(item)) {
@@ -23,7 +29,10 @@ export default function useTableSelection(
       }
     });
   };
-  
+  /**
+   * 移除选中行数据
+   * @param rows 
+   */
   const removeSelectedRows = (...rows: RowItemType[]) => {
     rows.forEach((item) => {
       const index = findSelectedRowIndex(item);

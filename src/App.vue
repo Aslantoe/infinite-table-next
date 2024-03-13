@@ -32,11 +32,16 @@ const a = mainColumns.value
 const focusedRow = ref({ name: 'jack', age: '18' })
 const selectedRows = ref([])
 
-const { addSelectedRows } = useTableSelection('a', focusedRow, selectedRows)
+const { addSelectedRows, removeSelectedRows } = useTableSelection('a', focusedRow, selectedRows)
  
 const handleAdd = () => {
   addSelectedRows([{ name: 'alice', age: '20' }])
 }
+
+const handleSub = () => {
+  removeSelectedRows([{ name: 'alice', age: '20' }])
+}
+
 
 onMounted(() => {
   emitter.on('current-change', (val)=> {
@@ -49,6 +54,7 @@ onMounted(() => {
 <template>
   <div>
     <button @click="handleAdd">add</button>
+    <button @click="handleSub">sub</button>
     {{ a }}
     <br />
     <br />

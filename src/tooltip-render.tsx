@@ -7,6 +7,7 @@ import arrow from "@popperjs/core/lib/modifiers/arrow";
 import preventOverflow from "@popperjs/core/lib/modifiers/preventOverflow";
 import flip from "@popperjs/core/lib/modifiers/flip";
 import TableStore from "@/table-store";
+import emitter from "./event-emitter";
 
 const tableStore: any = inject(tableStoreInjectKey)
 
@@ -21,8 +22,8 @@ declare let _tooltipWrapperClass: Record<string, boolean>;
 declare let _tooltip: ReturnType<typeof createPopper>;
 
 onMounted(() => {
-  tableStore.$on("show-tooltip", handleShowTooltip);
-  tableStore.$on("hide-tooltip", handleHideTooltip);
+  emitter.on("show-tooltip", () => handleShowTooltip);
+  emitter.on("hide-tooltip", handleHideTooltip);
 });
 
 onBeforeUnmount(() => {
