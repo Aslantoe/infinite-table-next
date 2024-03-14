@@ -2,18 +2,25 @@ import Vue, { VNode, defineComponent, ref, inject, onMounted, onBeforeUnmount, w
 import {
   tableOptionsInjectKey, tableStoreInjectKey, RowItemType, TableOptions,
 } from '@/common/types';
-import TableStore from '@/table-store';
+import useTableStore from '@/table-store';
+import useTableData from './hooks/useTableDataHooks';
 import TableRow from './table-row';
 import RangeRender from './render/range-render.vue';
+import emitter from './event-emitter';
+import useTableColumn from './hooks/useTbaleColumnHooks';
 
 const TableBody = defineComponent({
 
-  setup(props) {
-
-    let tableStore: any = inject(tableStoreInjectKey)
+  setup(props, { attrs }) {
+    // let tableStore: any = inject(tableStoreInjectKey)
+    
     
     const tableOptions: any = inject(tableOptionsInjectKey)
     
+    const { layoutSize } = useTableStore(tableOptions)
+    const { fixedData, normalData } = useTableData()
+    const { allColumnsWidth } = useTableColumn()
+
     const tableBody = ref<HTMLElement>()
 
     let scroll: HTMLElement
@@ -31,16 +38,9 @@ const TableBody = defineComponent({
     }) 
 
 
-  const tableBodyListeners = (): Record<string, Function | Function[]> => {
-    return {
-      ...$listeners,
-    };
-  }
-
-
   const handleScroll = () => {
     changeOffsetIndex();
-    tableStore.$emit('hide-tooltip');
+    emitter.emit('hide-tooltip');
   }
 
   const changeOffsetIndex = () => {
@@ -61,11 +61,11 @@ const TableBody = defineComponent({
    const renderNormalRows = () => {
     return (
       <RangeRender
-        data={tableStore.normalData}
+        data={normalData.value}
         direction="vertical"
         size={tableOptions.rowHeight}
         data-key={tableOptions.rowKey}
-        viewport-size={tableStore.layoutSize.viewportHeight - tableStore.fixedData.length * tableOptions.rowHeight}
+        viewport-size={layoutSize.value.viewportHeight - fixedData.length * tableOptions.rowHeight}
         offset={grid.offsetY}
         trail-size={2}
         leading-size={2}
@@ -76,7 +76,7 @@ const TableBody = defineComponent({
                 const { data, index } = slotProps;
                 return (
                   <TableRow
-                    index={index + tableStore.fixedData.length}
+                    index={index + fixedData.length}
                     offset-x={grid.offsetX}
                     data={data}
                   />
@@ -98,7 +98,8 @@ const TableBody = defineComponent({
         }}
       >
         {
-          tableStore.fixedData.map((rowData, index) => (
+          // @ts-ignore
+          fixedData.map((rowData, index) => (
             <TableRow
               key={index}
               index={index}
@@ -118,21 +119,17 @@ const TableBody = defineComponent({
         ref="tableBody"
         class="infinite-table__body"
         style={{
-          height: `${tableStore.layoutSize.viewportHeight}px`,
-          'transform-style': tableStore.fixedData.length >= 0 ? 'preserve-3d' : 'initial',
+          height: `${layoutSize.value.viewportHeight}px`,
+          'transform-style': fixedData.length >= 0 ? 'preserve-3d' : 'initial',
         }}
-        {
-          ...{
-            on: tableBodyListeners,
-          }
-        }
+        {...attrs}
       >
-        {tableStore.fixedData.length > 0 && renderFixedRow()}
+        {fixedData.length > 0 && renderFixedRow()}
         {renderNormalRows()}
         <div
           style={{
-            transform: `translateY(${tableStore.normalData.length * tableOptions.rowHeight}px)`,
-            width: `${tableStore.allColumnsWidth}px`,
+            transform: `translateY(${normalData.value.length * tableOptions.rowHeight}px)`,
+            width: `${allColumnsWidth.value}px`,
             position: 'absolute',
             height: '1px',
           }}

@@ -6,7 +6,7 @@ import {
   checkboxHeaderRender,
   defaultHeaderRender,
 } from "@/render/headerRenders";
-import TableStore from "@/table-store";
+import useTableStore from "@/table-store";
 import {
   RowItemType,
   ElementExtraAttrs,
@@ -26,11 +26,12 @@ import { defaultComparator } from "@/hooks/useTableDataHooks";
  * @return {string}
  */
 export const defaultColumnRender = function defaultColumnRender(
+  _h: typeof h,
   props: {
     options: TableColumnItem;
     rowIndex: number;
     row: any;
-    tableStore: typeof TableStore;
+    tableStore: typeof useTableStore;
   }
 ): VNode | string {
   if (!props || !props.options || !props.row) {
@@ -56,22 +57,17 @@ export function normalizeTooltipWrapperClass(
   return () => wrapper;
 }
 
-type HeaderRender = (props: HeaderRenderProps) => VNode;
+type HeaderRender = (_h: typeof h, props: HeaderRenderProps) => VNode;
 
-export type ColumnRender = (
-  props: ColumnRenderProps
-) => VNode | string;
+export type ColumnRender = (_h: typeof h, props: ColumnRenderProps) => VNode | string
 
-type ColumnExtraAttrsFunc = (
-  rowData: RowItemType,
-  rowColumn: TableColumnItem,
-  index: number
-) => ElementExtraAttrs;
+type ColumnExtraAttrsFunc = (rowData: RowItemType, rowColumn: TableColumnItem, index: number) => ElementExtraAttrs;
 
 export interface TableColumnOptions {
   key: string;
   type: string;
   label: string;
+  originalWidth: number;
   width: number;
   sortable: boolean;
   comparator?: (a: any, b: any, row1?: any, row2?: any) => number;
@@ -80,12 +76,10 @@ export interface TableColumnOptions {
   fixed: ColumnFixedType;
   columnRender: ColumnRender;
   headerRender: HeaderRender;
-  tooltipTrigger: "auto" | "always" | false;
+  tooltipTrigger: 'auto' | 'always' | false;
   tooltipFormatter?: (props: ColumnRenderProps) => string;
   tooltipRender?: (_h: typeof h, props: ColumnRenderProps) => VNode | string;
-  tooltipWrapperClass:
-    | Record<string, boolean>
-    | ((row: RowItemType) => Record<string, boolean>);
+  tooltipWrapperClass: Record<string, boolean> | ((row: RowItemType) => Record<string, boolean>);
   columnExtraAttrs?: ColumnExtraAttrsFunc;
 }
 
@@ -97,8 +91,8 @@ const columnOptionsMergers: Map<string, OptionMerger> = new Map([
   [
     "selection",
     (props) => ({
-      type: "selection",
       key: "__selection__",
+      type: "selection",
       width: 46,
       originalWidth: 46,
       label: "__selection__",

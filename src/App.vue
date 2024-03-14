@@ -3,7 +3,7 @@ import HelloWorld from './components/HelloWorld.vue'
 import getValue from 'get-value';
 import _ from 'lodash';
 import { computed, ref, onMounted } from 'vue';
-import useTableSelection from '@/hooks/useTableSelectionHooks'
+import useTableData from '@/hooks/useTableDataHooks'
 import emitter from "@/event-emitter";
 
 
@@ -32,7 +32,7 @@ const a = mainColumns.value
 const focusedRow = ref({ name: 'jack', age: '18' })
 const selectedRows = ref([])
 
-const { addSelectedRows, removeSelectedRows } = useTableSelection('a', focusedRow, selectedRows)
+const { addSelectedRows, removeSelectedRows } = useTableData()
  
 const handleAdd = () => {
   addSelectedRows([{ name: 'alice', age: '20' }])

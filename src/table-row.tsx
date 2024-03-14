@@ -51,17 +51,22 @@ const TableRow = defineComponent({
   },
 
   setup(props) {
-
     // const tableStore: any = inject(tableStoreInjectKey);
     const tableOptions: any = inject(tableOptionsInjectKey);
 
-    const { isSameRow, _isSameColumn, layoutSize } = useTableStore(tableOptions)
-    const { isRowSelected, selectedColumn, focusedRow } = useTableData()
-    const { getFixedColumnStyle, leftFixedColumns,
+    const { isSameRow, _isSameColumn, layoutSize } =
+      useTableStore(tableOptions);
+    const { isRowSelected, selectedColumn, focusedRow } = useTableData();
+    const {
+      getFixedColumnStyle,
+      leftFixedColumns,
       rightFixedColumns,
       mainColumns,
       leftFixedColumnWidth,
-      rightFixedColumnWidth, allColumnsWidth } = useTableColumn()
+      rightFixedColumnWidth,
+      allColumnsWidth,
+    } = useTableColumn();
+
     let dragoverColumnItem: TableColumnItem;
 
     const getExtraRowAttrs = (
@@ -98,9 +103,9 @@ const TableRow = defineComponent({
     };
     /**
      * 鼠标进入单元格事件
-     * @param data 
-     * @param column 
-     * @param event 
+     * @param data
+     * @param column
+     * @param event
      */
     const handleMouseEnterCell = (
       data: any,
@@ -127,7 +132,11 @@ const TableRow = defineComponent({
             ) : (
               <span>{contentElement?.textContent}</span>
             );
-            emitter.emit( "show-tooltip", {currentTarget: currentTarget, vnode: vnode, data: column.tooltipWrapperClass(data)});
+            emitter.emit("show-tooltip", {
+              currentTarget: currentTarget,
+              vnode: vnode,
+              data: column.tooltipWrapperClass(data),
+            });
           }
         }
       }
@@ -144,7 +153,7 @@ const TableRow = defineComponent({
       e: MouseEvent,
       rowIndex: number
     ) => {
-      emitter.emit("InfiniteTable", { eventName, data, column, e, rowIndex });
+      emitter.emit(eventName, {  data: data, column: column, event: e, rowIndex: rowIndex });
     };
 
     const renderColumnCell = (
@@ -155,6 +164,7 @@ const TableRow = defineComponent({
       tableStore: typeof useTableStore
     ) => {
       try {
+        // @ts-ignore
         return columnRender.call(h, {
           row: data,
           options: columnItem,
@@ -322,24 +332,30 @@ const TableRow = defineComponent({
           },
         }}
       >
-        {leftFixedColumns.value.map((column) => renderTableCell({ data: column }))}
+        {leftFixedColumns.value.map((column) =>
+          renderTableCell({ data: column })
+        )}
         <RangeRender
-            style={{ width: `${allColumnsWidth.value}px` }}
-            dataKey={(item: TableColumnItem) => item.key}
-            data={mainColumns}
-            direction="horizontal"
-            sizeField="width"
-            offset={props.offsetX}
-            viewportSize={layoutSize.value.viewportWidth - leftFixedColumnWidth.value - rightFixedColumnWidth.value}
-            {
-              ...{
-                scopedSlots: {
-                  default: renderTableCell,
-                },
-              }
-            }
-          />
-        {rightFixedColumns.value.map((column) => renderTableCell({ data: column }))}
+          style={{ width: `${allColumnsWidth.value}px` }}
+          dataKey={(item: TableColumnItem) => item.key}
+          data={mainColumns}
+          direction="horizontal"
+          sizeField="width"
+          offset={props.offsetX}
+          viewportSize={
+            layoutSize.value.viewportWidth -
+            leftFixedColumnWidth.value -
+            rightFixedColumnWidth.value
+          }
+          {...{
+            scopedSlots: {
+              default: renderTableCell,
+            },
+          }}
+        />
+        {rightFixedColumns.value.map((column) =>
+          renderTableCell({ data: column })
+        )}
       </div>
     );
   },

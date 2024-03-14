@@ -1,4 +1,4 @@
-import Vue, { watch, ref, defineEmits } from "vue";
+import Vue, { watch, ref, defineEmits, computed } from "vue";
 import { get, getDataKey, intersection, isEmpty } from "@/utils/object";
 import TableColumnItem from "@/hooks/useTableColumnItemHooks";
 import { RowItemType, RowKeyType, TableOptions } from "@/common/types";
@@ -60,18 +60,18 @@ export default function useTableData () {
     );
   };
   
-  const normalData = () => {
+  const normalData = computed(() => {
     const set = new Set(fixedKeys);
     const data = tableData.value.filter(
       (dataItem) => !set.has(getDataKey(dataItem, rowKey.value))
     );
     return compareDataItem(data);
-  };
+  });
   
-  const sortedOption: SortedOption = { column: null, order: "nature" };
+  const sortedOption = ref<SortedOption>({ column: null, order: "nature" });
   
   const compareDataItem = (data: RowItemType[]) => {
-    const { column, order } = sortedOption;
+    const { column, order } = sortedOption.value;
     if (!order || !column || order === "nature") {
       return data;
     }
@@ -152,7 +152,7 @@ export default function useTableData () {
     if (table) {
       emit("current-change", selectedRows.value);
     }
-  });
+  }, { deep: true });
   
   watch(tableData, () => {
     /**
@@ -179,7 +179,7 @@ export default function useTableData () {
       selectedRows.value = nextSelectedRows;
     }
     // FIXME: 添加focusRow的修改方法
-  });
+  }, { deep: true });
   
   const findSelectedRowIndex = (row: RowItemType): number => {
     const rowDateKey = getDataKey(row, rowKey.value);
@@ -198,9 +198,17 @@ export default function useTableData () {
     selectedRows,
     focusedRow,
     selectedColumn,
+    sortedOption,
     isRowSelected,
     normalData,
-    updateFocusedRow
+    updateFocusedRow,
+    removeSelectedRows,
+    addSelectedRows,
+    clearSelectedRows,
+    updateSortedOption,
+    updateFixedKeys,
+    updateData,
+    fixedData
   }
 }
 

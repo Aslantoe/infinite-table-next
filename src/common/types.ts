@@ -1,5 +1,5 @@
 import { h, VNode } from 'vue';
-// import TableStore from '@/table-store';
+import useTableStore from '@/table-store';
 import TableColumnItem from '@/hooks/useTableColumnItemHooks';
 
 export type ColumnFixedType = 'left' | 'right' | false | true;
@@ -17,7 +17,7 @@ export interface ColumnRenderProps {
 
 export interface HeaderRenderProps {
   options: TableColumnItem;
-  tableStore: any;
+  tableStore: typeof useTableStore;
 }
 
 export type ElementExtraAttrs = { style?: any, class?: any, attrs?: any }

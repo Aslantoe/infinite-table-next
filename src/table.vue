@@ -526,5 +526,3 @@ const handleKeyEvent = (event: KeyboardEvent, keyStatus: KeyStatus) => {
 
 
 </script>
-
-@/hooks/useTableColumnItemHooks./hooks/useTableDataHooks./hooks/useTbaleColumnHooks

@@ -1,4 +1,4 @@
-import { PropType, defineComponent, ref } from "vue";
+import Vue, { ref } from "vue";
 import { getDataKey } from "@/utils/object";
 import TableColumnItem from "@/hooks/useTableColumnItemHooks";
 import { RowKeyType, TableOptions, RowItemType } from "@/common/types";
@@ -23,6 +23,7 @@ export default function useTableStore(
 ) {
   const { allTableColumns, updateColumns } = useTableColumn();
   const { tableData } = useTableData();
+  
   const layoutSize = ref<TableLayout>({
     tableHeight: 0,
     tableWidth: 0,
@@ -30,7 +31,7 @@ export default function useTableStore(
     viewportHeight: 0,
     viewportWidth: 0,
   });
-  const table = undefined;
+  let table = typeof Vue;
   /**
    * table的tableHeight, tableWidth，或tableHeaderHeight发生变化时
    * 应当调用此方法
@@ -113,9 +114,10 @@ export default function useTableStore(
 
   return {
     layoutSize,
+    table,
     doLayout,
     isSameRow,
     _isSameColumn,
-    updateLayoutSize
+    updateLayoutSize,
   };
 }

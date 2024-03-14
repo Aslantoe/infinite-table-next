@@ -5,10 +5,12 @@ import {
   tableOptionsInjectKey,
   TableOptions,
 } from "@/common/types";
-import TableStore from "@/table-store";
 import TableColumnItem from "@/hooks/useTableColumnItemHooks";
-import NotifyMixin from "@/event-emitter";
+import useTableStore from "@/table-store";
+import useTableColumn from "./hooks/useTbaleColumnHooks";
+import useTableData from "./hooks/useTableDataHooks";
 import TableConfig from "@/config";
+import emitter from "@/event-emitter";
 
 const HEADER_DRAG_DATA_TYPE: string = "headerColumnIndex".toLowerCase();
 
@@ -22,8 +24,13 @@ interface ResizeIndicator {
 
 const TableHeader = defineComponent({
   setup() {
-    const tableStore: any = inject(tableStoreInjectKey);
-    const tableOptions: any = inject(tableOptionsInjectKey);
+    // const tableStore: any = inject(tableStoreInjectKey);
+    // @ts-ignore
+    const tableOptions: TableOptions = inject(tableOptionsInjectKey);
+    const { sortedOption, updateSortedOption } = useTableData();
+    const { _isSameColumn } = useTableStore(tableOptions);
+    const { allTableColumns, getFixedColumnStyle, allColumnsWidth } =
+      useTableColumn();
     let mouseEnterIndex: number = -1;
 
     const resizeIndicator: ResizeIndicator = {
@@ -68,11 +75,10 @@ const TableHeader = defineComponent({
         if (contentElement) {
           const overflow = overflowDetection(contentElement);
           if (overflow) {
-            tableStore.$emit(
-              "show-tooltip",
-              currentTarget,
-              <span>{column.label}</span>
-            );
+            emitter.emit("show-tooltip", {
+              curTarget: currentTarget,
+              content: <span>{column.label}</span>,
+            });
           }
         }
       }
@@ -80,7 +86,7 @@ const TableHeader = defineComponent({
 
     const handleMouseLeave = (evt: MouseEvent) => {
       mouseEnterIndex = -1;
-      tableStore.$emit("hide-tooltip");
+      emitter.emit("hide-tooltip");
     };
 
     /**
@@ -116,18 +122,17 @@ const TableHeader = defineComponent({
         if (resizeIndicator.visible) {
           const { activeIndex, startX } = resizeIndicator;
           const { pageX } = event;
-          const activeColumn = tableStore.allTableColumns[activeIndex];
+          const activeColumn = allTableColumns.value[activeIndex];
           let delta = pageX - startX;
           if (activeColumn.width + delta < TableConfig.minColumnWidth) {
             delta = TableConfig.minColumnWidth - activeColumn.width;
           }
-          NotifyMixin.notify(
-            "InfiniteTable",
-            "column-resize",
+          emitter.emit("InfiniteTable", {
+            e: "column-resize",
             activeIndex,
             activeColumn,
-            delta
-          );
+            delta,
+          });
         }
         resizeIndicator.visible = false;
         document.body.removeEventListener(
@@ -219,21 +224,20 @@ const TableHeader = defineComponent({
         10
       );
       if (!Number.isNaN(dragIndex)) {
-        const dragItem = tableStore.allTableColumns[dragIndex];
-        const dropItem = tableStore.allTableColumns[dropIndex];
-        NotifyMixin.notify(
-          "InfiniteTable",
-          "header-drop",
+        const dragItem = allTableColumns.value[dragIndex];
+        const dropItem = allTableColumns.value[dropIndex];
+        emitter.emit("InfiniteTable", {
+          e: "header-drop",
           dragIndex,
           dragItem,
           dropIndex,
-          dropItem
-        );
+          dropItem,
+        });
       }
     };
 
     const getFixedStyle = (column: TableColumnItem) => {
-      return tableStore.getFixedColumnStyle(column);
+      return getFixedColumnStyle(column);
     };
 
     const getActiveClass = (
@@ -241,12 +245,12 @@ const TableHeader = defineComponent({
       order: "asc" | "desc" | "nature"
     ) => {
       // FIXME: 修改order的类型
-      if (!tableStore.sortedOption.column) {
+      if (!sortedOption.value.column) {
         return false;
       }
       return (
-        tableStore.isSameColumn(column, tableStore.sortedOption.column) &&
-        tableStore.sortedOption.order === order
+        _isSameColumn(column, sortedOption.value.column) &&
+        sortedOption.value.order === order
       );
     };
 
@@ -257,9 +261,10 @@ const TableHeader = defineComponent({
       // 如果column可以排序，并且TableHeader不处于resize模式中，就设置sortOption
       if (column.sortable) {
         // 排序的逻辑在tableStore中
-        tableStore.updateSortedOption({ column, order });
+        updateSortedOption({ column, order });
         nextTick(() => {
-          NotifyMixin.notify("InfiniteTable", "sort-change", {
+          emitter.emit("InfiniteTable", {
+            e: "sort-change",
             column,
             order,
           });
@@ -267,17 +272,16 @@ const TableHeader = defineComponent({
       }
     };
 
-    const { allTableColumns } = tableStore;
     return () => (
       <>
         <div
           class="infinite-table__table-header"
           style={{
             height: `${tableOptions.headerHeight}px`,
-            width: `${tableStore.allColumnsWidth}px`,
+            width: `${allColumnsWidth.value}px`,
           }}
         >
-          {allTableColumns.map((column, columnIndex) => (
+          {allTableColumns.value.map((column, columnIndex) => (
             <div
               key={columnIndex}
               class={getTableCellClass(column, columnIndex)}
@@ -303,12 +307,11 @@ const TableHeader = defineComponent({
                     if (column.sortable) {
                       handleColumnSort(column);
                     } else {
-                      NotifyMixin.notify(
-                        "InfiniteTable",
-                        "header-column-click",
+                      emitter.emit("InfiniteTable", {
+                        e: "header-column-click",
                         column,
-                        evt
-                      );
+                        evt,
+                      });
                     }
                   },
                 },
@@ -317,7 +320,7 @@ const TableHeader = defineComponent({
               <div class="cell-content">
                 {column.headerRender(h, {
                   options: column,
-                  tableStore: tableStore,
+                  tableStore: typeof useTableStore,
                 })}
                 {column.sortable && (
                   <div class="infinite-table__table-header__sortable">

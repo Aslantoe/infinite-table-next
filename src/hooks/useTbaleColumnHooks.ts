@@ -1,16 +1,19 @@
 import { sumBy } from "@/utils/collection";
 import TableColumnItem from "@/hooks/useTableColumnItemHooks";
+import useTableData from "./useTableDataHooks";
 import { RowItemType, TableOptions, ColumnFixedType } from "@/common/types";
-import { TableLayout } from "@/table-store";
+// import { TableLayout } from "@/table-store";
 import { getDataKey } from "@/utils/object";
 import { ref, computed } from "vue";
 import _ from 'lodash';
 
 export default function useTableColumn() {
 
+  const { normalData } = useTableData()
+
   let tableOptions: TableOptions;
-  let layoutSize: TableLayout;
-  let normalData: RowItemType[];
+  // let layoutSize: TableLayout;
+  // let normalData: RowItemType[];
   
   const columnStore = ref<TableColumnItem[]>([]);
   
@@ -130,7 +133,7 @@ export default function useTableColumn() {
   
   const findRowIndex = (key: string): number => {
     const { rowKey } = tableOptions;
-    return normalData.findIndex((item) => getDataKey(item, rowKey) === key);
+    return normalData.value.findIndex((item) => getDataKey(item, rowKey) === key);
   };
   
   const updateColumns = (columns: TableColumnItem[]) => {
@@ -144,15 +147,17 @@ export default function useTableColumn() {
   return {
     allTableColumns,
     columnStore,
-    updateColumns,
-    clearColumns,
-    getFixedColumnStyle,
     allColumnsWidth,
     leftFixedColumns,
     rightFixedColumns,
     mainColumns,
     leftFixedColumnWidth,
-    rightFixedColumnWidth
+    rightFixedColumnWidth,
+    updateColumns,
+    clearColumns,
+    getFixedColumnStyle,
+    getColumnOffset,
+    findRowIndex,
   }
 }
 
