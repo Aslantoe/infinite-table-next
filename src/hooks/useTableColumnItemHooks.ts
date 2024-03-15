@@ -64,22 +64,22 @@ export type ColumnRender = (_h: typeof h, props: ColumnRenderProps) => VNode | s
 type ColumnExtraAttrsFunc = (rowData: RowItemType, rowColumn: TableColumnItem, index: number) => ElementExtraAttrs;
 
 export interface TableColumnOptions {
-  key: string;
-  type: string;
+  key?: string;
+  type?: string;
   label: string;
-  originalWidth: number;
-  width: number;
-  sortable: boolean;
+  originalWidth?: number;
+  width?: number;
+  sortable?: boolean;
   comparator?: (a: any, b: any, row1?: any, row2?: any) => number;
   sortBy?: string;
   prop?: string;
-  fixed: ColumnFixedType;
-  columnRender: ColumnRender;
-  headerRender: HeaderRender;
-  tooltipTrigger: 'auto' | 'always' | false;
+  fixed?: ColumnFixedType;
+  columnRender?: ColumnRender;
+  headerRender?: HeaderRender;
+  tooltipTrigger?: 'auto' | 'always' | false;
   tooltipFormatter?: (props: ColumnRenderProps) => string;
   tooltipRender?: (_h: typeof h, props: ColumnRenderProps) => VNode | string;
-  tooltipWrapperClass: Record<string, boolean> | ((row: RowItemType) => Record<string, boolean>);
+  tooltipWrapperClass?: Record<string, boolean> | ((row: RowItemType) => Record<string, boolean>);
   columnExtraAttrs?: ColumnExtraAttrsFunc;
 }
 

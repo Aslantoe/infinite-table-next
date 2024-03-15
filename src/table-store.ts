@@ -1,4 +1,4 @@
-import Vue, { ref } from "vue";
+import { ref, toRaw } from "vue";
 import { getDataKey } from "@/utils/object";
 import TableColumnItem from "@/hooks/useTableColumnItemHooks";
 import { RowKeyType, TableOptions, RowItemType } from "@/common/types";
@@ -31,28 +31,31 @@ export default function useTableStore(
     viewportHeight: 0,
     viewportWidth: 0,
   });
-  let table = typeof Vue;
+  let table;
   /**
+   * 
    * table的tableHeight, tableWidth，或tableHeaderHeight发生变化时
    * 应当调用此方法
    * 此方法会更新表格的layout数据
    * @param layoutSize
    */
   // @DebounceDecorator({ wait: 500, leading: true, trailing: true })
-  const updateLayoutSize = (layoutSize: {
+  const updateLayoutSize = (_layoutSize: {
     tableHeight: number;
     tableWidth: number;
     tableHeaderHeight: number;
     viewportHeight: number;
     viewportWidth: number;
   }): void => {
-    layoutSize = {
-      tableHeaderHeight: layoutSize.tableHeaderHeight,
-      tableHeight: layoutSize.tableHeight,
-      tableWidth: layoutSize.tableWidth,
+    layoutSize.value = {
+      tableHeaderHeight: _layoutSize.tableHeaderHeight,
+      tableHeight: _layoutSize.tableHeight,
+      tableWidth: _layoutSize.tableWidth,
       viewportHeight: 0,
       viewportWidth: 0,
     };
+    console.log('updateLayoutSize--->doLayout--->allTableColumns--->', allTableColumns.value);
+    
     doLayout(allTableColumns.value);
   };
 
@@ -69,12 +72,17 @@ export default function useTableStore(
   };
 
   const doLayout = (columns: TableColumnItem[]) => {
+    // debugger
+    
     const { tableHeight, tableWidth, tableHeaderHeight } = layoutSize.value;
     /**
      * 没有mounted的时候，tableHeight和tableWidth都是0
      * 此时只需要把columns信息暂存
      */
     if (columns.length === 0 || tableHeight === 0 || tableWidth === 0) {
+      console.log('此时只需要把columns信息暂存');
+      console.log('table-store-->doLayout-->', toRaw(columns));
+      // debugger
       updateColumns(columns);
       return;
     }
@@ -108,7 +116,8 @@ export default function useTableStore(
     // FIXME: 使用事件处理viewportHeight可能随着column改变而变化
     layoutSize.value.viewportHeight = viewportHeight;
     layoutSize.value.viewportWidth = viewportWidth;
-
+    console.log('calculatedColumns', calculatedColumns);
+    // debugger
     updateColumns(calculatedColumns);
   };
 

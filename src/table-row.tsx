@@ -338,7 +338,7 @@ const TableRow = defineComponent({
         <RangeRender
           style={{ width: `${allColumnsWidth.value}px` }}
           dataKey={(item: TableColumnItem) => item.key}
-          data={mainColumns}
+          data={mainColumns.value}
           direction="horizontal"
           sizeField="width"
           offset={props.offsetX}
@@ -347,11 +347,7 @@ const TableRow = defineComponent({
             leftFixedColumnWidth.value -
             rightFixedColumnWidth.value
           }
-          {...{
-            scopedSlots: {
-              default: renderTableCell,
-            },
-          }}
+          v-slots={ {default: () => renderTableCell} }
         />
         {rightFixedColumns.value.map((column) =>
           renderTableCell({ data: column })

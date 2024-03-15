@@ -1,4 +1,4 @@
-import { defineComponent, h, inject, nextTick } from "vue";
+import { defineComponent, h, inject, nextTick, onMounted } from "vue";
 import { getElementOffset, overflowDetection } from "@/utils/layout";
 import {
   tableStoreInjectKey,
@@ -27,11 +27,12 @@ const TableHeader = defineComponent({
     // const tableStore: any = inject(tableStoreInjectKey);
     // @ts-ignore
     const tableOptions: TableOptions = inject(tableOptionsInjectKey);
+    console.log("tableHeader", tableOptions);
     const { sortedOption, updateSortedOption } = useTableData();
+    const { allTableColumns, getFixedColumnStyle, allColumnsWidth } = useTableColumn();
     const { _isSameColumn } = useTableStore(tableOptions);
-    const { allTableColumns, getFixedColumnStyle, allColumnsWidth } =
-      useTableColumn();
     let mouseEnterIndex: number = -1;
+  
 
     const resizeIndicator: ResizeIndicator = {
       activeIndex: -1,
@@ -61,11 +62,19 @@ const TableHeader = defineComponent({
       };
     };
 
+    /**
+     * 处理鼠标进入事件
+     * @param evt
+     * @param column
+     * @param columnIndex
+     */
     const handleMouseEnter = (
       evt: MouseEvent,
       column: TableColumnItem,
       columnIndex: number
     ) => {
+      console.log("handleMouseEnter");
+
       mouseEnterIndex = columnIndex;
       const { currentTarget } = evt;
       if (currentTarget && currentTarget instanceof HTMLElement) {
@@ -273,55 +282,56 @@ const TableHeader = defineComponent({
     };
 
     return () => (
-      <>
-        <div
-          class="infinite-table__table-header"
-          style={{
-            height: `${tableOptions.headerHeight}px`,
-            width: `${allColumnsWidth.value}px`,
-          }}
-        >
-          {allTableColumns.value.map((column, columnIndex) => (
+      <div
+        class="infinite-table__table-header"
+        style={{
+          height: `${tableOptions.headerHeight}px`,
+          width: `${allColumnsWidth.value}px`,
+        }}
+      >
+        {allTableColumns.value.map((column, columnIndex) => {
+          return (
             <div
+              id="head-id"
               key={columnIndex}
               class={getTableCellClass(column, columnIndex)}
               style={{ width: `${column.width}px`, ...getFixedStyle(column) }}
               draggable={tableOptions.headerOrderDraggable}
-              {...{
-                staticClass: "infinite-table__cell",
-                on: {
-                  mouseenter: (evt: MouseEvent) =>
-                    handleMouseEnter(evt, column, columnIndex),
-                  mouseleave: (evt: MouseEvent) => handleMouseLeave(evt),
-                  mousemove: (evt: MouseEvent) =>
-                    handleMouseMove(columnIndex, evt),
-                  "!mousedown": (evt: MouseEvent) =>
-                    handleMouseDown(columnIndex, evt),
-                  dragstart: (evt: DragEvent) =>
-                    handleHeaderDragStart(columnIndex, evt),
-                  dragover: (evt: DragEvent) =>
-                    handleHeaderDragOver(columnIndex, evt),
-                  dragend: (evt: DragEvent) => handleHeaderDragEnd(),
-                  drop: (evt: DragEvent) => handleHeaderDrop(columnIndex, evt),
-                  click: (evt: MouseEvent) => {
-                    if (column.sortable) {
-                      handleColumnSort(column);
-                    } else {
-                      emitter.emit("InfiniteTable", {
-                        e: "header-column-click",
-                        column,
-                        evt,
-                      });
-                    }
-                  },
-                },
+              staticClass="infinite-table__cell"
+              onmouseenter={(evt: MouseEvent) =>
+                handleMouseEnter(evt, column, columnIndex)
+              }
+              onmouseleave={(evt: MouseEvent) => handleMouseLeave(evt)}
+              onmousemove={(evt: MouseEvent) =>
+                handleMouseMove(columnIndex, evt)
+              }
+              // "!mousedown": (evt: MouseEvent) => handleMouseDown(columnIndex, evt),
+              ondragstart={(evt: DragEvent) =>
+                handleHeaderDragStart(columnIndex, evt)
+              }
+              ondragover={(evt: DragEvent) =>
+                handleHeaderDragOver(columnIndex, evt)
+              }
+              ondragend={(evt: DragEvent) => handleHeaderDragEnd()}
+              ondrop={(evt: DragEvent) => handleHeaderDrop(columnIndex, evt)}
+              onClick={(evt: MouseEvent) => {
+                if (column.sortable) {
+                  handleColumnSort(column);
+                } else {
+                  emitter.emit("InfiniteTable", {
+                    e: "header-column-click",
+                    column,
+                    evt,
+                  });
+                }
               }}
             >
+              <p>{column.value}</p>
               <div class="cell-content">
-                {column.headerRender(h, {
-                  options: column,
-                  tableStore: typeof useTableStore,
-                })}
+                {/* { column.headerRender(h, {
+                options: column,
+                tableStore: typeof useTableStore,
+              })} */}
                 {column.sortable && (
                   <div class="infinite-table__table-header__sortable">
                     <div
@@ -348,16 +358,16 @@ const TableHeader = defineComponent({
                 )}
               </div>
             </div>
-          ))}
-          {resizeIndicator.visible && (
-            <div
-              ref="resizeIndicator"
-              class="infinite-table__resize-indicator"
-              style={{ left: `${resizeIndicator.left}px` }}
-            />
-          )}
-        </div>
-      </>
+          );
+        })}
+        {resizeIndicator.visible && (
+          <div
+            ref="resizeIndicator"
+            class="infinite-table__resize-indicator"
+            style={{ left: `${resizeIndicator.left}px` }}
+          />
+        )}
+      </div>
     );
   },
 });

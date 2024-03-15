@@ -15,11 +15,11 @@ const popper = ref();
 
 const tooltipVisible = ref<boolean>(false);
 
-declare let _tooltipVnode: VNode;
+let _tooltipVnode: VNode;
 
-declare let _tooltipWrapperClass: Record<string, boolean>;
+let _tooltipWrapperClass: Record<string, boolean>;
 
-declare let _tooltip: ReturnType<typeof createPopper>;
+let _tooltip: ReturnType<typeof createPopper>;
 
 onMounted(() => {
   emitter.on("show-tooltip", () => handleShowTooltip);

@@ -4,7 +4,7 @@ import useTableData from "./useTableDataHooks";
 import { RowItemType, TableOptions, ColumnFixedType } from "@/common/types";
 // import { TableLayout } from "@/table-store";
 import { getDataKey } from "@/utils/object";
-import { ref, computed } from "vue";
+import { ref, computed, watch, toRaw, reactive } from "vue";
 import _ from 'lodash';
 
 export default function useTableColumn() {
@@ -16,10 +16,14 @@ export default function useTableColumn() {
   // let normalData: RowItemType[];
   
   const columnStore = ref<TableColumnItem[]>([]);
-  
+  const column = ref({ arr: <TableColumnItem[]>[] })
+  let columnR = reactive<TableColumnItem[]>([])
+
   // 所有列
   const allTableColumns = computed(() => {
-    const arr = _.concat(leftFixedColumns, mainColumns, rightFixedColumns);
+    const arr = _.concat(leftFixedColumns.value, mainColumns.value, rightFixedColumns.value);
+    // debugger
+    console.log('useTbaleColumnHooks-->allTableColumns-->', column.value.arr);
     return arr;
   });
   
@@ -30,6 +34,7 @@ export default function useTableColumn() {
   
   // 左侧冻结列
   const leftFixedColumns = computed(() => {
+    // debugger
     return columnStore.value.filter((item) => item.fixed === "left");
   });
   
@@ -135,9 +140,14 @@ export default function useTableColumn() {
     const { rowKey } = tableOptions;
     return normalData.value.findIndex((item) => getDataKey(item, rowKey) === key);
   };
+
   
   const updateColumns = (columns: TableColumnItem[]) => {
+    columnR = columns;
+    column.value.arr = columns;
     columnStore.value = columns;
+    // debugger
+    console.log('useTbaleColumnHooks-->updateColumns-->columnStore.value-->', columnStore.value);
   };
   
   const clearColumns = () => {
@@ -158,6 +168,7 @@ export default function useTableColumn() {
     getFixedColumnStyle,
     getColumnOffset,
     findRowIndex,
+    findColumnIndex
   }
 }
 

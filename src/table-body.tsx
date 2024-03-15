@@ -1,99 +1,103 @@
-import Vue, { VNode, defineComponent, ref, inject, onMounted, onBeforeUnmount, watch } from 'vue';
+import Vue, {
+  VNode,
+  defineComponent,
+  ref,
+  inject,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+} from "vue";
 import {
-  tableOptionsInjectKey, tableStoreInjectKey, RowItemType, TableOptions,
-} from '@/common/types';
-import useTableStore from '@/table-store';
-import useTableData from './hooks/useTableDataHooks';
-import TableRow from './table-row';
-import RangeRender from './render/range-render.vue';
-import emitter from './event-emitter';
-import useTableColumn from './hooks/useTbaleColumnHooks';
+  tableOptionsInjectKey,
+  tableStoreInjectKey,
+  RowItemType,
+  TableOptions,
+} from "@/common/types";
+import useTableStore from "@/table-store";
+import useTableData from "./hooks/useTableDataHooks";
+import TableRow from "./table-row";
+import RangeRender from "./render/range-render.vue";
+import emitter from "./event-emitter";
+import useTableColumn from "./hooks/useTbaleColumnHooks";
 
 const TableBody = defineComponent({
-
   setup(props, { attrs }) {
     // let tableStore: any = inject(tableStoreInjectKey)
-    
-    
-    const tableOptions: any = inject(tableOptionsInjectKey)
-    
-    const { layoutSize } = useTableStore(tableOptions)
-    const { fixedData, normalData } = useTableData()
-    const { allColumnsWidth } = useTableColumn()
 
-    const tableBody = ref<HTMLElement>()
+    const tableOptions: any = inject(tableOptionsInjectKey);
 
-    let scroll: HTMLElement
+    const { layoutSize } = useTableStore(tableOptions);
+    const { fixedData, normalData } = useTableData();
+    const { allColumnsWidth } = useTableColumn();
+
+    const tableBody = ref<HTMLElement>();
+
+    let scroll: HTMLElement;
     let grid = { offsetX: 0, offsetY: 0 };
 
     onMounted(() => {
-      scroll = getScrollElement();
-      scroll.addEventListener('scroll', handleScroll);
-      handleScroll();
-    }) 
-    
-    
+      // scroll = getScrollElement();
+      // scroll.addEventListener('scroll', handleScroll);
+      // handleScroll();
+    });
+
     onBeforeUnmount(() => {
-      scroll.removeEventListener('scroll', handleScroll);
-    }) 
+      // scroll.removeEventListener('scroll', handleScroll);
+    });
 
+    const handleScroll = () => {
+      changeOffsetIndex();
+      emitter.emit("hide-tooltip");
+    };
 
-  const handleScroll = () => {
-    changeOffsetIndex();
-    emitter.emit('hide-tooltip');
-  }
+    const changeOffsetIndex = () => {
+      const { scrollTop, scrollLeft } = scroll;
+      grid.offsetX = scrollLeft;
+      grid.offsetY = scrollTop;
+    };
 
-  const changeOffsetIndex = () => {
-    const { scrollTop, scrollLeft } = scroll;
-    grid.offsetX = scrollLeft;
-    grid.offsetY = scrollTop;
-  }
+    const getScrollElement = (): HTMLElement => {
+      return $el.closest(".infinite-table--scrollable") as HTMLElement;
+    };
 
-  const getScrollElement = (): HTMLElement => {
-    return $el.closest('.infinite-table--scrollable') as HTMLElement;
-  }
+    // watch(data, () => {
+    //   handleScroll();
+    // });
 
-  
-  // watch(data, () => {
-  //   handleScroll();
-  // });
+    const slots = {
+      default: (slotProps: { data: RowItemType; index: number }) => {
+        const { data, index } = slotProps;
+        return (
+          <TableRow
+            index={index + fixedData.length}
+            offset-x={grid.offsetX}
+            data={data}
+          />
+        );
+      },
+    }
 
-   const renderNormalRows = () => {
-    return (
+    const renderNormalRows = () => (
       <RangeRender
         data={normalData.value}
         direction="vertical"
         size={tableOptions.rowHeight}
         data-key={tableOptions.rowKey}
-        viewport-size={layoutSize.value.viewportHeight - fixedData.length * tableOptions.rowHeight}
+        viewport-size={
+          layoutSize.value.viewportHeight -
+          fixedData.length * tableOptions.rowHeight
+        }
         offset={grid.offsetY}
         trail-size={2}
         leading-size={2}
-        {
-          ...{
-            scopedSlots: {
-              default: (slotProps: { data: RowItemType, index: number }) => {
-                const { data, index } = slotProps;
-                return (
-                  <TableRow
-                    index={index + fixedData.length}
-                    offset-x={grid.offsetX}
-                    data={data}
-                  />
-                );
-              },
-            },
-          }
-        }
+        v-slots={slots}
       />
     );
-  }
 
-  const renderFixedRow = () => {
-    return (
+    const renderFixedRow = () => (
       <div
         style={{
-          position: 'relative',
+          position: "relative",
           transform: `translate3d(0, ${grid.offsetY}px, 1px)`,
         }}
       >
@@ -111,33 +115,32 @@ const TableBody = defineComponent({
         }
       </div>
     );
-  }
 
-  
-    return (
+    return () => (
       <div
         ref="tableBody"
         class="infinite-table__body"
         style={{
           height: `${layoutSize.value.viewportHeight}px`,
-          'transform-style': fixedData.length >= 0 ? 'preserve-3d' : 'initial',
+          "transform-style": fixedData.length >= 0 ? "preserve-3d" : "initial",
         }}
         {...attrs}
       >
-        {fixedData.length > 0 && renderFixedRow()}
-        {renderNormalRows()}
+        { fixedData.length > 0 && renderFixedRow() }
+        { renderNormalRows() }
         <div
           style={{
-            transform: `translateY(${normalData.value.length * tableOptions.rowHeight}px)`,
+            transform: `translateY(${
+              normalData.value.length * tableOptions.rowHeight
+            }px)`,
             width: `${allColumnsWidth.value}px`,
-            position: 'absolute',
-            height: '1px',
+            position: "absolute",
+            height: "1px",
           }}
         />
       </div>
     );
-  }
+  },
+});
 
-})
-
-export default TableBody
+export default TableBody;

@@ -7,9 +7,16 @@ export default defineComponent({
       count.value++;
     };
 
+    const handleKeyEvent = (e) => {
+      console.log(111, e);
+      
+    }
+
     return () => (
       <div
-        style={{ padding: 10, backgroundColor: "#cef", textAlign: "center" }}
+        style={{ backgroundColor: "#cef", textAlign: "center" }}
+
+        onkeydown={(evt: KeyboardEvent) => handleKeyEvent(evt)}
       >
         <h1>This is Parent</h1>
         <button onClick={handleIncrease}>Count++</button>
