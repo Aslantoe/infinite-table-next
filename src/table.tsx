@@ -138,14 +138,14 @@ export default defineComponent({
 
     provide(tableOptionsInjectKey, tableOptions);
 
-    const {
-      findRowIndex,
-      allTableColumns,
-      getColumnOffset,
-      leftFixedColumnWidth,
-      rightFixedColumnWidth,
-      findColumnIndex,
-    } = useTableColumn();
+    // const {
+    //   findRowIndex,
+    //   allTableColumns,
+    //   getColumnOffset,
+    //   leftFixedColumnWidth,
+    //   rightFixedColumnWidth,
+    //   findColumnIndex,
+    // } = useTableColumn();
 
     const {
       updateData,
@@ -162,7 +162,18 @@ export default defineComponent({
       fixedData,
     } = useTableData();
 
-    const { updateLayoutSize, layoutSize, doLayout, table } =
+    const {
+      updateLayoutSize,
+      layoutSize,
+      doLayout,
+      table,
+      findRowIndex,
+      allTableColumns,
+      getColumnOffset,
+      leftFixedColumnWidth,
+      rightFixedColumnWidth,
+      findColumnIndex,
+     } =
       useTableStore(tableOptions);
 
     let tableDefaultOptions: InfiniteTableDefaultOptions = {
@@ -601,7 +612,7 @@ export default defineComponent({
       >
         <div ref="scrollElement" class="infinite-table--scrollable">
           <div>{{  }}</div>
-          <TableHeader class={tableHeaderClass} />
+          <TableHeader tableColumns={allTableColumns.value} class={tableHeaderClass} />
           {props.data.length > 0 && (
             <TableBody
               onDragover={(e: DragEvent) => emit("body-dragover", e)}

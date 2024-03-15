@@ -54,10 +54,10 @@ const TableRow = defineComponent({
     // const tableStore: any = inject(tableStoreInjectKey);
     const tableOptions: any = inject(tableOptionsInjectKey);
 
-    const { isSameRow, _isSameColumn, layoutSize } =
-      useTableStore(tableOptions);
-    const { isRowSelected, selectedColumn, focusedRow } = useTableData();
     const {
+      isSameRow,
+      _isSameColumn,
+      layoutSize,
       getFixedColumnStyle,
       leftFixedColumns,
       rightFixedColumns,
@@ -65,7 +65,17 @@ const TableRow = defineComponent({
       leftFixedColumnWidth,
       rightFixedColumnWidth,
       allColumnsWidth,
-    } = useTableColumn();
+    } = useTableStore(tableOptions);
+    const { isRowSelected, selectedColumn, focusedRow } = useTableData();
+    // const {
+    //   getFixedColumnStyle,
+    //   leftFixedColumns,
+    //   rightFixedColumns,
+    //   mainColumns,
+    //   leftFixedColumnWidth,
+    //   rightFixedColumnWidth,
+    //   allColumnsWidth,
+    // } = useTableColumn();
 
     let dragoverColumnItem: TableColumnItem;
 
@@ -153,7 +163,12 @@ const TableRow = defineComponent({
       e: MouseEvent,
       rowIndex: number
     ) => {
-      emitter.emit(eventName, {  data: data, column: column, event: e, rowIndex: rowIndex });
+      emitter.emit(eventName, {
+        data: data,
+        column: column,
+        event: e,
+        rowIndex: rowIndex,
+      });
     };
 
     const renderColumnCell = (
@@ -347,7 +362,7 @@ const TableRow = defineComponent({
             leftFixedColumnWidth.value -
             rightFixedColumnWidth.value
           }
-          v-slots={ {default: () => renderTableCell} }
+          v-slots={{ default: () => renderTableCell }}
         />
         {rightFixedColumns.value.map((column) =>
           renderTableCell({ data: column })

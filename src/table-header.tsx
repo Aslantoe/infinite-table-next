@@ -1,4 +1,4 @@
-import { defineComponent, h, inject, nextTick, onMounted } from "vue";
+import { defineComponent, h, inject, nextTick, onMounted, PropType } from "vue";
 import { getElementOffset, overflowDetection } from "@/utils/layout";
 import {
   tableStoreInjectKey,
@@ -23,16 +23,31 @@ interface ResizeIndicator {
 }
 
 const TableHeader = defineComponent({
-  setup() {
+  props: {
+    tableColumns: {
+      type: Array as PropType<TableColumnItem[]>,
+      required: true,
+      default: () => [],
+    },
+  },
+  setup(props) {
     // const tableStore: any = inject(tableStoreInjectKey);
     // @ts-ignore
     const tableOptions: TableOptions = inject(tableOptionsInjectKey);
-    console.log("tableHeader", tableOptions);
     const { sortedOption, updateSortedOption } = useTableData();
-    const { allTableColumns, getFixedColumnStyle, allColumnsWidth } = useTableColumn();
-    const { _isSameColumn } = useTableStore(tableOptions);
+    // const { allTableColumns, getFixedColumnStyle, allColumnsWidth } = useTableColumn();
+    const {
+      _isSameColumn,
+      allTableColumns,
+      getFixedColumnStyle,
+      allColumnsWidth,
+    } = useTableStore(tableOptions);
     let mouseEnterIndex: number = -1;
-  
+    console.log("tableHeader", props.tableColumns);
+
+    onMounted(() => {
+      console.log(45454545, props.tableColumns);
+    });
 
     const resizeIndicator: ResizeIndicator = {
       activeIndex: -1,
@@ -131,7 +146,7 @@ const TableHeader = defineComponent({
         if (resizeIndicator.visible) {
           const { activeIndex, startX } = resizeIndicator;
           const { pageX } = event;
-          const activeColumn = allTableColumns.value[activeIndex];
+          const activeColumn = props.tableColumns[activeIndex];
           let delta = pageX - startX;
           if (activeColumn.width + delta < TableConfig.minColumnWidth) {
             delta = TableConfig.minColumnWidth - activeColumn.width;
@@ -233,8 +248,8 @@ const TableHeader = defineComponent({
         10
       );
       if (!Number.isNaN(dragIndex)) {
-        const dragItem = allTableColumns.value[dragIndex];
-        const dropItem = allTableColumns.value[dropIndex];
+        const dragItem = props.tableColumns[dragIndex];
+        const dropItem = props.tableColumns[dropIndex];
         emitter.emit("InfiniteTable", {
           e: "header-drop",
           dragIndex,
@@ -289,7 +304,7 @@ const TableHeader = defineComponent({
           width: `${allColumnsWidth.value}px`,
         }}
       >
-        {allTableColumns.value.map((column, columnIndex) => {
+        {props.tableColumns.map((column, columnIndex) => {
           return (
             <div
               id="head-id"
@@ -326,12 +341,11 @@ const TableHeader = defineComponent({
                 }
               }}
             >
-              <p>{column.value}</p>
               <div class="cell-content">
-                {/* { column.headerRender(h, {
-                options: column,
-                tableStore: typeof useTableStore,
-              })} */}
+                {column.headerRender(h, {
+                  options: column,
+                  tableStore: typeof useTableStore,
+                })}
                 {column.sortable && (
                   <div class="infinite-table__table-header__sortable">
                     <div

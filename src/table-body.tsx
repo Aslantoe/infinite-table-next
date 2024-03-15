@@ -26,9 +26,9 @@ const TableBody = defineComponent({
 
     const tableOptions: any = inject(tableOptionsInjectKey);
 
-    const { layoutSize } = useTableStore(tableOptions);
+    const { layoutSize, allColumnsWidth } = useTableStore(tableOptions);
     const { fixedData, normalData } = useTableData();
-    const { allColumnsWidth } = useTableColumn();
+    // const { allColumnsWidth } = useTableColumn();
 
     const tableBody = ref<HTMLElement>();
 
