@@ -34,14 +34,16 @@ const TableHeader = defineComponent({
     // const tableStore: any = inject(tableStoreInjectKey);
     // @ts-ignore
     const tableOptions: TableOptions = inject(tableOptionsInjectKey);
-    const { sortedOption, updateSortedOption } = useTableData();
+    // const { sortedOption, updateSortedOption } = useTableData();
     // const { allTableColumns, getFixedColumnStyle, allColumnsWidth } = useTableColumn();
     const {
       _isSameColumn,
       allTableColumns,
       getFixedColumnStyle,
       allColumnsWidth,
-    } = useTableStore(tableOptions);
+      sortedOption,
+      updateSortedOption
+    } = useTableStore(tableOptions, 'id', 'table-header');
     let mouseEnterIndex: number = -1;
     console.log("tableHeader", props.tableColumns);
 

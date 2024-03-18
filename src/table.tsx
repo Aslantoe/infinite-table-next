@@ -135,6 +135,8 @@ export default defineComponent({
       freezeRow: false,
       topFixedKeys: props.topFixedKeys,
     };
+    console.log('provide');
+    
 
     provide(tableOptionsInjectKey, tableOptions);
 
@@ -147,20 +149,20 @@ export default defineComponent({
     //   findColumnIndex,
     // } = useTableColumn();
 
-    const {
-      updateData,
-      updateFixedKeys,
-      isRowSelected,
-      selectedColumn,
-      clearSelectedRows,
-      focusedRow,
-      removeSelectedRows,
-      addSelectedRows,
-      updateFocusedRow,
-      normalData,
-      tableData,
-      fixedData,
-    } = useTableData();
+    // const {
+    //   updateData,
+    //   updateFixedKeys,
+    //   isRowSelected,
+    //   selectedColumn,
+    //   clearSelectedRows,
+    //   focusedRow,
+    //   removeSelectedRows,
+    //   addSelectedRows,
+    //   updateFocusedRow,
+    //   normalData,
+    //   tableData,
+    //   fixedData,
+    // } = useTableData();
 
     const {
       updateLayoutSize,
@@ -173,8 +175,20 @@ export default defineComponent({
       leftFixedColumnWidth,
       rightFixedColumnWidth,
       findColumnIndex,
+      updateData,
+      updateFixedKeys,
+      isRowSelected,
+      selectedColumn,
+      clearSelectedRows,
+      focusedRow,
+      removeSelectedRows,
+      addSelectedRows,
+      updateFocusedRow,
+      normalData,
+      tableData,
+      fixedData,
      } =
-      useTableStore(tableOptions);
+      useTableStore(tableOptions, props.rowKey);
 
     let tableDefaultOptions: InfiniteTableDefaultOptions = {
       defaultEmptySlot: (h) => h("span", "暂无数据"),
@@ -215,8 +229,10 @@ export default defineComponent({
     watch(
       () => props.data,
       (newData: RowItemType[]) => {
+        console.log(3355, newData);
         updateData(newData);
-      }
+      },
+      {immediate: true, deep: true}
     );
 
     watch(
@@ -249,10 +265,7 @@ export default defineComponent({
 
     onMounted(() => {
       setColumns(props.tableColumns)
-      setTimeout(() => {
-        console.log("onmounted", props.height, allTableColumns.value);
-      }, 1000);
-
+      console.log("onmounted", normalData.value);
       resizeObserver = new ResizeObserver((observerEntries) => {
         if (observerEntries && observerEntries.length > 0) {
           const entry = observerEntries[0];
@@ -611,10 +624,10 @@ export default defineComponent({
         // "!click": () => focus(),
       >
         <div ref="scrollElement" class="infinite-table--scrollable">
-          <div>{{  }}</div>
           <TableHeader tableColumns={allTableColumns.value} class={tableHeaderClass} />
           {props.data.length > 0 && (
             <TableBody
+              normalData={normalData.value}
               onDragover={(e: DragEvent) => emit("body-dragover", e)}
               onDrop={(e: DragEvent) => emit("body-drop", e)}
             />

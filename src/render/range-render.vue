@@ -1,7 +1,7 @@
 <template>
-  {{ pool }}
   <div class="range-render">
     <div
+      v-if="pool.length"
       v-for="item of pool"
       :key="item.props.id"
       class="range-render__item"
@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { PropType, ref, watch, onMounted, computed } from "vue";
+import { PropType, ref, watch, onMounted, computed, toRaw } from "vue";
 import get from "get-value";
 import { calcAccumulationIndex, calcFixedIndex } from "./transform";
 import "./style.scss";
@@ -41,9 +41,7 @@ const props = defineProps({
   data: {
     type: Array as PropType<any[]>,
     required: true,
-    default() {
-      return [];
-    },
+    default: () => [],
   },
   /**
    * 列表的方向，可选值 vertical horizontal
@@ -108,7 +106,7 @@ const props = defineProps({
  *
  */
 
-const pool = ref<any[]>([]);
+const pool: any = [];
 
 /**
  * 计算每个元素的位置
@@ -152,8 +150,11 @@ let cacheViewList: ViewItem[] = [];
 
 let activeViewMap: Map<string, ViewItem> = new Map();
 
-onMounted(() => {
+onMounted(() => {  
   handleIndexChange();
+
+  console.log('pool', pool);
+
 })
 
 watch(
@@ -185,7 +186,7 @@ const addToPool = (
     writable: false,
     value: viewProps,
   });
-  pool.value.push(view);
+  pool.push(view)
 
   return view as ViewItem;
 };
@@ -206,9 +207,7 @@ const invalidViewItem = (viewItem: ViewItem): void => {
 /**
  * 当offset变化或数据发生变化的时候调用此方法
  */
-const handleIndexChange = (): void => {
-  console.log(111);
-  
+const handleIndexChange = (): void => {  
   const { offset, viewportSize, dataKey, data, size, sizeField } = props;
 
   let startIndex: number; // 开始的index，包含
@@ -236,8 +235,8 @@ const handleIndexChange = (): void => {
   endIndex = Math.min(data.length, endIndex + props.trailSize);
 
   // 清理现有的pool，将没有在展示的viewItem无效化
-  for (let i = 0; i < pool.value.length; i += 1) {
-    const viewItem = pool.value[i];
+  for (let i = 0; i < pool.length; i += 1) {
+    const viewItem = pool[i];
     const currentData = props.data[viewItem.props.index];
     /**
      * 判断元素是否在显示范围内

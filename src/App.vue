@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 800px;">
+  <div style="width: 800px">
     <InfiniteTableNext
       row-key="id"
       :height="500"
@@ -14,13 +14,16 @@
 import { ref } from "vue";
 import InfiniteTableNext from "./table.tsx";
 
-const tableData = ref([{ id: "1", name: "jack", age: "25" }]);
+const tableData = ref([
+  { id: "1", name: "jack", age: "25", address: "star city" },
+  { id: "2", name: "alice", age: "26", address: "star city" },
+]);
 
 const columns = [
   {
     label: "id",
     prop: "id",
-    fixed: 'left'
+    fixed: "left",
   },
   {
     label: "姓名",
@@ -29,6 +32,10 @@ const columns = [
   {
     label: "年龄",
     prop: "age",
+  },
+  {
+    label: "地址",
+    prop: "address",
   },
 ];
 </script>

@@ -1,7 +1,7 @@
-import Vue, { watch, ref, defineEmits, computed } from "vue";
+import Vue, { watch, ref, defineEmits, computed, inject, onMounted } from "vue";
 import { get, getDataKey, intersection, isEmpty } from "@/utils/object";
 import TableColumnItem from "@/hooks/useTableColumnItemHooks";
-import { RowItemType, RowKeyType, TableOptions } from "@/common/types";
+import { RowItemType, RowKeyType, TableOptions, tableOptionsInjectKey } from "@/common/types";
 import { isSameColumn } from "./utils";
 
 const emit = defineEmits(["current-change"]);
@@ -36,12 +36,13 @@ export interface SortedOption {
 }
 
 export default function useTableData () {
+  const tableOptions: any = inject(tableOptionsInjectKey);
 
   const rowKey = ref<RowKeyType>('');
   
   let table: typeof Vue;
   
-  let tableOptions: TableOptions;
+  // let tableOptions: TableOptions;
   
   let fixedKeys: string[];
   
@@ -91,6 +92,8 @@ export default function useTableData () {
   };
   
   const updateData = (nextData: RowItemType[]) => {
+    console.log(9988, tableOptions);
+    
     if (tableOptions.freezeRow) {
       tableData.value = nextData.map((item: any) => Object.freeze(item));
     } else {
@@ -99,6 +102,7 @@ export default function useTableData () {
   };
   
   const updateFixedKeys = (keys: string[]) => {
+    console.log('updateFixedKeys--', keys);
     fixedKeys = keys;
   };
   

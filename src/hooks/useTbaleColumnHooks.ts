@@ -9,7 +9,7 @@ import _ from 'lodash';
 
 export default function useTableColumn() {
 
-  const { normalData } = useTableData()
+  // const { normalData } = useTableData()
 
   let tableOptions: TableOptions;
   // let layoutSize: TableLayout;

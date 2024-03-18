@@ -1,5 +1,5 @@
 import Vue, {
-  VNode,
+  PropType,
   defineComponent,
   ref,
   inject,
@@ -21,13 +21,24 @@ import emitter from "./event-emitter";
 import useTableColumn from "./hooks/useTbaleColumnHooks";
 
 const TableBody = defineComponent({
+  props: {
+    normalData: {
+      type: Array as PropType<RowItemType[]>,
+      required: true,
+      default: () => [],
+    }
+  },
   setup(props, { attrs }) {
     // let tableStore: any = inject(tableStoreInjectKey)
 
     const tableOptions: any = inject(tableOptionsInjectKey);
 
-    const { layoutSize, allColumnsWidth } = useTableStore(tableOptions);
-    const { fixedData, normalData } = useTableData();
+    const { layoutSize, allColumnsWidth, fixedData, normalData, allTableColumns, tableData } = useTableStore(tableOptions, 'id', 'table-body');
+    
+
+    // console.log('table-body', normalData.value);
+    
+    // const { fixedData, normalData } = useTableData();
     // const { allColumnsWidth } = useTableColumn();
 
     const tableBody = ref<HTMLElement>();
@@ -36,6 +47,8 @@ const TableBody = defineComponent({
     let grid = { offsetX: 0, offsetY: 0 };
 
     onMounted(() => {
+      console.log('table-body----', tableData.value, normalData.value);
+
       // scroll = getScrollElement();
       // scroll.addEventListener('scroll', handleScroll);
       // handleScroll();
@@ -67,6 +80,7 @@ const TableBody = defineComponent({
     const slots = {
       default: (slotProps: { data: RowItemType; index: number }) => {
         const { data, index } = slotProps;
+        console.log('slots', data, index); 
         return (
           <TableRow
             index={index + fixedData.length}
@@ -79,7 +93,7 @@ const TableBody = defineComponent({
 
     const renderNormalRows = () => (
       <RangeRender
-        data={normalData.value}
+        data={props.normalData}
         direction="vertical"
         size={tableOptions.rowHeight}
         data-key={tableOptions.rowKey}

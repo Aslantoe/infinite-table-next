@@ -1,4 +1,4 @@
-import { defineComponent, PropType, inject, h } from "vue";
+import { defineComponent, PropType, inject, h, onMounted } from "vue";
 import emitter from "@/event-emitter";
 import TableColumnItem, { ColumnRender } from "@/hooks/useTableColumnItemHooks";
 import {
@@ -65,8 +65,9 @@ const TableRow = defineComponent({
       leftFixedColumnWidth,
       rightFixedColumnWidth,
       allColumnsWidth,
-    } = useTableStore(tableOptions);
-    const { isRowSelected, selectedColumn, focusedRow } = useTableData();
+      isRowSelected, selectedColumn, focusedRow
+    } = useTableStore(tableOptions, 'id', 'table-row');
+    // const { isRowSelected, selectedColumn, focusedRow } = useTableData();
     // const {
     //   getFixedColumnStyle,
     //   leftFixedColumns,
@@ -76,6 +77,13 @@ const TableRow = defineComponent({
     //   rightFixedColumnWidth,
     //   allColumnsWidth,
     // } = useTableColumn();
+
+
+    onMounted(() => {
+      console.log('row---', props.data, props.index, props.offsetX);
+      console.log('mainColumns', mainColumns.value);
+      
+    })
 
     let dragoverColumnItem: TableColumnItem;
 
@@ -220,7 +228,7 @@ const TableRow = defineComponent({
         "fixed-right": columnOption.fixed === "right",
         ...normalizeClass(extraAttrs.class),
       };
-      return (
+      return () => (
         <div
           class={cellClassNames}
           staticClass="infinite-table__cell infinite-table__cell--ellipsis"
@@ -290,7 +298,7 @@ const TableRow = defineComponent({
     };
 
     const extraAttrs = getExtraRowAttrs(props.data, props.index);
-    return (
+    return () => (
       <div
         class={extraAttrs.class}
         staticClass="infinite-table__row"
@@ -350,6 +358,7 @@ const TableRow = defineComponent({
         {leftFixedColumns.value.map((column) =>
           renderTableCell({ data: column })
         )}
+        <h1>{props.data?.name}</h1>
         <RangeRender
           style={{ width: `${allColumnsWidth.value}px` }}
           dataKey={(item: TableColumnItem) => item.key}
