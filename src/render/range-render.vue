@@ -150,12 +150,11 @@ let cacheViewList: ViewItem[] = [];
 
 let activeViewMap: Map<string, ViewItem> = new Map();
 
-onMounted(() => {  
+onMounted(() => {
   handleIndexChange();
 
-  console.log('pool', pool);
-
-})
+  console.log("pool", pool);
+});
 
 watch(
   () => componentProps,
@@ -170,7 +169,6 @@ const addToPool = (
   index: number,
   key: string
 ): ViewItem => {
-
   const viewProps = {
     id: viewId,
     active: true,
@@ -186,7 +184,7 @@ const addToPool = (
     writable: false,
     value: viewProps,
   });
-  pool.push(view)
+  pool.push(view);
 
   return view as ViewItem;
 };
@@ -207,7 +205,9 @@ const invalidViewItem = (viewItem: ViewItem): void => {
 /**
  * 当offset变化或数据发生变化的时候调用此方法
  */
-const handleIndexChange = (): void => {  
+const handleIndexChange = (): void => {
+  console.log(11111111);
+
   const { offset, viewportSize, dataKey, data, size, sizeField } = props;
 
   let startIndex: number; // 开始的index，包含
@@ -266,8 +266,8 @@ const handleIndexChange = (): void => {
       throw new Error("[range-render]: 无法获取数据的唯一key值");
     }
     let viewItem: ViewItem | undefined = activeViewMap.get(key);
-    console.log('viewitem', );
-    
+    console.log("viewitem");
+
     if (!viewItem) {
       viewItem = cacheViewList.pop();
       if (viewItem) {

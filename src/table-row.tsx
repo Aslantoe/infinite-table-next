@@ -65,8 +65,10 @@ const TableRow = defineComponent({
       leftFixedColumnWidth,
       rightFixedColumnWidth,
       allColumnsWidth,
-      isRowSelected, selectedColumn, focusedRow
-    } = useTableStore(tableOptions, 'id', 'table-row');
+      isRowSelected,
+      selectedColumn,
+      focusedRow,
+    } = useTableStore(tableOptions, "id", "table-row");
     // const { isRowSelected, selectedColumn, focusedRow } = useTableData();
     // const {
     //   getFixedColumnStyle,
@@ -78,12 +80,10 @@ const TableRow = defineComponent({
     //   allColumnsWidth,
     // } = useTableColumn();
 
-
     onMounted(() => {
-      console.log('row---', props.data, props.index, props.offsetX);
-      console.log('mainColumns', mainColumns.value);
-      
-    })
+      console.log("row---", props.data, props.index, props.offsetX);
+      console.log("mainColumns", mainColumns.value);
+    });
 
     let dragoverColumnItem: TableColumnItem;
 
@@ -230,8 +230,10 @@ const TableRow = defineComponent({
       };
       return () => (
         <div
-          class={cellClassNames}
-          staticClass="infinite-table__cell infinite-table__cell--ellipsis"
+          class={[
+            "infinite-table__cell infinite-table__cell--ellipsis",
+            cellClassNames,
+          ]}
           {...{
             attrs: extraAttrs.attrs,
             style: {
@@ -300,8 +302,7 @@ const TableRow = defineComponent({
     const extraAttrs = getExtraRowAttrs(props.data, props.index);
     return () => (
       <div
-        class={extraAttrs.class}
-        staticClass="infinite-table__row"
+        class={["infinite-table__row", extraAttrs.class]}
         draggable={tableOptions.rowDraggable}
         {...{
           style: {
@@ -358,7 +359,8 @@ const TableRow = defineComponent({
         {leftFixedColumns.value.map((column) =>
           renderTableCell({ data: column })
         )}
-        <h1>{props.data?.name}</h1>
+        {/* <h1>{props.data?.name}</h1> */}
+
         <RangeRender
           style={{ width: `${allColumnsWidth.value}px` }}
           dataKey={(item: TableColumnItem) => item.key}

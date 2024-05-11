@@ -6,6 +6,7 @@ import {
   VNode,
   onUnmounted,
   ref,
+  reactive,
   provide,
   watch,
   onMounted,
@@ -120,7 +121,7 @@ export default defineComponent({
     },
   },
   setup(props, { attrs, emit, slots }) {
-    const tableOptions: TableOptions = {
+    const tableOptions = reactive<TableOptions>({
       rowExtraAttrs: props.rowExtraAttrs,
       headerHeight: px2num(props.headerHeight),
       striped: props.striped,
@@ -134,35 +135,11 @@ export default defineComponent({
       multipleSelection: props.multipleSelection,
       freezeRow: false,
       topFixedKeys: props.topFixedKeys,
-    };
-    console.log('provide');
+    });
     
-
+  
     provide(tableOptionsInjectKey, tableOptions);
 
-    // const {
-    //   findRowIndex,
-    //   allTableColumns,
-    //   getColumnOffset,
-    //   leftFixedColumnWidth,
-    //   rightFixedColumnWidth,
-    //   findColumnIndex,
-    // } = useTableColumn();
-
-    // const {
-    //   updateData,
-    //   updateFixedKeys,
-    //   isRowSelected,
-    //   selectedColumn,
-    //   clearSelectedRows,
-    //   focusedRow,
-    //   removeSelectedRows,
-    //   addSelectedRows,
-    //   updateFocusedRow,
-    //   normalData,
-    //   tableData,
-    //   fixedData,
-    // } = useTableData();
 
     const {
       updateLayoutSize,

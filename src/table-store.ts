@@ -362,6 +362,7 @@ export default function useTableStore(
   };
   
   const updateSortedOption = (sortedOption: SortedOption) => {
+    console.log('updatesortedOption--', sortedOption);
     const { column: prevColumn, order: prevOrder } = sortedOption;
     const { column } = sortedOption;
     let { order } = sortedOption;

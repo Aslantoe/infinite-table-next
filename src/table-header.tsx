@@ -1,4 +1,4 @@
-import { defineComponent, h, inject, nextTick, onMounted, PropType } from "vue";
+import { defineComponent, h, inject, nextTick, ref, onMounted, PropType } from "vue";
 import { getElementOffset, overflowDetection } from "@/utils/layout";
 import {
   tableStoreInjectKey,
@@ -42,22 +42,23 @@ const TableHeader = defineComponent({
       getFixedColumnStyle,
       allColumnsWidth,
       sortedOption,
-      updateSortedOption
-    } = useTableStore(tableOptions, 'id', 'table-header');
-    let mouseEnterIndex: number = -1;
-    console.log("tableHeader", props.tableColumns);
+      updateSortedOption,
+    } = useTableStore(tableOptions, "id", "table-header");
+    const mouseEnterIndex = ref<number>(-1);
+    // console.log("tableHeader", props.tableColumns);
+    // console.log("tableOptions", tableOptions.headerResizable);
 
     onMounted(() => {
       console.log(45454545, props.tableColumns);
     });
 
-    const resizeIndicator: ResizeIndicator = {
+    const resizeIndicator = ref<ResizeIndicator>({
       activeIndex: -1,
       startX: 0,
       hover: false,
       visible: false,
       left: -9999,
-    };
+    });
 
     const scrollElement = ($parent): HTMLElement | undefined => {
       return $parent.$refs.scrollElement as HTMLElement;
@@ -67,15 +68,17 @@ const TableHeader = defineComponent({
       column: TableColumnItem,
       columnIndex: number
     ) => {
+      
       const isCurrentIndex =
-        mouseEnterIndex === columnIndex || mouseEnterIndex - 1 === columnIndex;
+      mouseEnterIndex.value === columnIndex || mouseEnterIndex.value - 1 === columnIndex;
+      console.log('----', isCurrentIndex);
       return {
         "infinite-table__cell--fixed": column.fixed,
         "infinite-table__cell--pointer":
-          column.sortable && !resizeIndicator.hover,
+          column.sortable && !resizeIndicator.value.hover,
         "infinite-table__cell--resizeable":
-          resizeIndicator.hover && isCurrentIndex,
-        hover: !resizeIndicator.visible && isCurrentIndex,
+          resizeIndicator.value.hover && isCurrentIndex,
+        hover: !resizeIndicator.value.visible && isCurrentIndex,
       };
     };
 
@@ -90,9 +93,7 @@ const TableHeader = defineComponent({
       column: TableColumnItem,
       columnIndex: number
     ) => {
-      console.log("handleMouseEnter");
-
-      mouseEnterIndex = columnIndex;
+      mouseEnterIndex.value = columnIndex;
       const { currentTarget } = evt;
       if (currentTarget && currentTarget instanceof HTMLElement) {
         const contentElement = currentTarget.querySelector(
@@ -111,7 +112,7 @@ const TableHeader = defineComponent({
     };
 
     const handleMouseLeave = (evt: MouseEvent) => {
-      mouseEnterIndex = -1;
+      mouseEnterIndex.value = -1;
       emitter.emit("hide-tooltip");
     };
 
@@ -123,10 +124,10 @@ const TableHeader = defineComponent({
     const handleMouseDown = (columnIndex: number, event: MouseEvent) => {
       const { headerResizable } = tableOptions;
       // 如果鼠标按下时，鼠标在可以resize的区域内
-      if (headerResizable && resizeIndicator.hover) {
-        resizeIndicator.visible = true;
+      if (headerResizable && resizeIndicator.value.hover) {
+        resizeIndicator.value.visible = true;
         setResizeIndicatorPosition(event);
-        resizeIndicator.startX = event.pageX;
+        resizeIndicator.value.startX = event.pageX;
         document.body.addEventListener("mousemove", handleResizeIndicatorMove);
         document.body.addEventListener("mouseup", handleResizeIndicatorMouseUp);
         // 处于resize状态时，禁用单击事件
@@ -145,8 +146,8 @@ const TableHeader = defineComponent({
 
     const handleResizeIndicatorMouseUp = (event: MouseEvent) => {
       if (tableOptions.headerResizable) {
-        if (resizeIndicator.visible) {
-          const { activeIndex, startX } = resizeIndicator;
+        if (resizeIndicator.value.visible) {
+          const { activeIndex, startX } = resizeIndicator.value;
           const { pageX } = event;
           const activeColumn = props.tableColumns[activeIndex];
           let delta = pageX - startX;
@@ -160,7 +161,7 @@ const TableHeader = defineComponent({
             delta,
           });
         }
-        resizeIndicator.visible = false;
+        resizeIndicator.value.visible = false;
         document.body.removeEventListener(
           "mousemove",
           handleResizeIndicatorMove
@@ -186,25 +187,34 @@ const TableHeader = defineComponent({
       return 0;
     };
 
+    /**
+     * 鼠标在表头内移动触发
+     * @param columnIndex
+     * @param event
+     * @returns
+     */
     const handleMouseMove = (columnIndex: number, event: MouseEvent) => {
-      if (tableOptions.headerResizable && !resizeIndicator.visible) {
+      console.log('=====111', tableOptions.headerResizable, resizeIndicator.value.visible, tableOptions.headerOrderDraggable);
+      if (tableOptions.headerResizable && !resizeIndicator.value.visible) {
         const { currentTarget, pageX } = event;
         // FIXME: 研究currentTarget为空时的逻辑
         if (!(currentTarget instanceof HTMLElement)) {
           return;
         }
+        console.log('=====');
+        
         const { left } = getElementOffset(currentTarget);
         const right = left + currentTarget.offsetWidth;
         // 判断是否靠近右侧边缘或者 靠近左侧边缘且不是第一个
         if (right - pageX < 8 || (pageX - left < 8 && columnIndex > 0)) {
           currentTarget.draggable = false;
-          resizeIndicator.hover = true;
+          resizeIndicator.value.hover = true;
           const activeIndex =
-            right - pageX < 8 ? mouseEnterIndex : mouseEnterIndex - 1;
-          resizeIndicator.activeIndex = activeIndex;
+            right - pageX < 8 ? mouseEnterIndex.value : mouseEnterIndex.value - 1;
+          resizeIndicator.value.activeIndex = activeIndex;
         } else {
           currentTarget.draggable = true;
-          resizeIndicator.hover = false;
+          resizeIndicator.value.hover = false;
         }
       }
     };
@@ -212,7 +222,7 @@ const TableHeader = defineComponent({
     const setResizeIndicatorPosition = (event: MouseEvent) => {
       // FIXME: 调整$parent.$el的调用方式
       const { left } = getElementOffset($parent.$el as HTMLElement);
-      resizeIndicator.left = getParentScrollLeft() + event.pageX - left;
+      resizeIndicator.value.left = getParentScrollLeft() + event.pageX - left;
     };
 
     const handleResizeIndicatorMove = (event: MouseEvent) => {
@@ -284,6 +294,8 @@ const TableHeader = defineComponent({
       column: TableColumnItem,
       order?: "asc" | "desc" | "nature"
     ) => {
+      console.log(11111111, order);
+
       // 如果column可以排序，并且TableHeader不处于resize模式中，就设置sortOption
       if (column.sortable) {
         // 排序的逻辑在tableStore中
@@ -309,12 +321,13 @@ const TableHeader = defineComponent({
         {props.tableColumns.map((column, columnIndex) => {
           return (
             <div
-              id="head-id"
               key={columnIndex}
-              class={getTableCellClass(column, columnIndex)}
+              class={[
+                "infinite-table__cell",
+                getTableCellClass(column, columnIndex),
+              ]}
               style={{ width: `${column.width}px`, ...getFixedStyle(column) }}
               draggable={tableOptions.headerOrderDraggable}
-              staticClass="infinite-table__cell"
               onmouseenter={(evt: MouseEvent) =>
                 handleMouseEnter(evt, column, columnIndex)
               }
@@ -322,7 +335,7 @@ const TableHeader = defineComponent({
               onmousemove={(evt: MouseEvent) =>
                 handleMouseMove(columnIndex, evt)
               }
-              // "!mousedown": (evt: MouseEvent) => handleMouseDown(columnIndex, evt),
+              onmousedown={(evt: MouseEvent) => handleMouseDown(columnIndex, evt)}
               ondragstart={(evt: DragEvent) =>
                 handleHeaderDragStart(columnIndex, evt)
               }
@@ -351,20 +364,22 @@ const TableHeader = defineComponent({
                 {column.sortable && (
                   <div class="infinite-table__table-header__sortable">
                     <div
-                      class={{
-                        active: getActiveClass(column, "asc"),
-                      }}
-                      staticClass="infinite-table__sortable ascending"
+                      class={[
+                        "infinite-table__sortable ascending",
+                        { active: getActiveClass(column, "asc") },
+                      ]}
                       onClick={(evt: MouseEvent) => {
                         evt.stopImmediatePropagation();
                         handleColumnSort(column, "asc");
                       }}
                     />
                     <div
-                      class={{
-                        active: getActiveClass(column, "desc"),
-                      }}
-                      staticClass="infinite-table__sortable descending"
+                      class={[
+                        "infinite-table__sortable descending",
+                        {
+                          active: getActiveClass(column, "desc"),
+                        },
+                      ]}
                       onClick={(evt: MouseEvent) => {
                         evt.stopImmediatePropagation();
                         handleColumnSort(column, "desc");
@@ -376,11 +391,11 @@ const TableHeader = defineComponent({
             </div>
           );
         })}
-        {resizeIndicator.visible && (
+        {resizeIndicator.value.visible && (
           <div
             ref="resizeIndicator"
             class="infinite-table__resize-indicator"
-            style={{ left: `${resizeIndicator.left}px` }}
+            style={{ left: `${resizeIndicator.value.left}px` }}
           />
         )}
       </div>

@@ -124,7 +124,7 @@
 
     .cell-content {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
 
       span {
@@ -137,7 +137,7 @@
 
     }
 
-    &.hover {
+    &:hover {
       border-right: 1px solid white;
     }
   }

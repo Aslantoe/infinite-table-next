@@ -66,8 +66,7 @@ export const TooltipRender = (): VNode => {
       "div",
       {
         ref: "popper",
-        class: _tooltipWrapperClass,
-        staticClass: "infinite-table__tooltip",
+        class: ['infinite-table__tooltip', _tooltipWrapperClass],
         role: "tooltip",
       },
       [

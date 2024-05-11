@@ -4,7 +4,9 @@
       row-key="id"
       :height="500"
       :data="tableData"
-      :striped="false"
+      :striped="true"
+      :header-order-draggable="true"
+      :headerResizeable="true"
       :table-columns="columns"
     />
   </div>
@@ -32,6 +34,7 @@ const columns = [
   {
     label: "年龄",
     prop: "age",
+    sortable: true
   },
   {
     label: "地址",
