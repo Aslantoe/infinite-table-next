@@ -1,4 +1,13 @@
-import { defineComponent, h, inject, nextTick, ref, onMounted, PropType } from "vue";
+import {
+  defineComponent,
+  h,
+  inject,
+  nextTick,
+  ref,
+  onMounted,
+  PropType,
+  getCurrentInstance,
+} from "vue";
 import { getElementOffset, overflowDetection } from "@/utils/layout";
 import {
   tableStoreInjectKey,
@@ -31,6 +40,8 @@ const TableHeader = defineComponent({
     },
   },
   setup(props) {
+    const parent = getCurrentInstance()?.parent;
+
     // const tableStore: any = inject(tableStoreInjectKey);
     // @ts-ignore
     const tableOptions: TableOptions = inject(tableOptionsInjectKey);
@@ -60,18 +71,18 @@ const TableHeader = defineComponent({
       left: -9999,
     });
 
-    const scrollElement = ($parent): HTMLElement | undefined => {
-      return $parent.$refs.scrollElement as HTMLElement;
+    const scrollElement = () => {
+      return parent?.refs.scrollElement as HTMLElement;
     };
 
     const getTableCellClass = (
       column: TableColumnItem,
       columnIndex: number
     ) => {
-      
       const isCurrentIndex =
-      mouseEnterIndex.value === columnIndex || mouseEnterIndex.value - 1 === columnIndex;
-      console.log('----', isCurrentIndex);
+        mouseEnterIndex.value === columnIndex ||
+        mouseEnterIndex.value - 1 === columnIndex;
+      // console.log('----', isCurrentIndex);
       return {
         "infinite-table__cell--fixed": column.fixed,
         "infinite-table__cell--pointer":
@@ -143,23 +154,26 @@ const TableHeader = defineComponent({
       event.stopPropagation();
       event.stopImmediatePropagation();
     };
-
+    /**
+     * 列宽设置
+     * @param event
+     */
     const handleResizeIndicatorMouseUp = (event: MouseEvent) => {
       if (tableOptions.headerResizable) {
         if (resizeIndicator.value.visible) {
           const { activeIndex, startX } = resizeIndicator.value;
           const { pageX } = event;
           const activeColumn = props.tableColumns[activeIndex];
+          console.log("列宽设置", activeColumn);
+
           let delta = pageX - startX;
+          console.log('delta', delta);
+          console.log('activeColumn.width', activeColumn.width);
+          console.log('TableConfig.minColumnWidth', TableConfig.minColumnWidth);
           if (activeColumn.width + delta < TableConfig.minColumnWidth) {
             delta = TableConfig.minColumnWidth - activeColumn.width;
           }
-          emitter.emit("InfiniteTable", {
-            e: "column-resize",
-            activeIndex,
-            activeColumn,
-            delta,
-          });
+          emitter.emit("column-resize", {columnIndex: activeIndex, column: activeColumn, size: delta});
         }
         resizeIndicator.value.visible = false;
         document.body.removeEventListener(
@@ -181,8 +195,8 @@ const TableHeader = defineComponent({
     };
 
     const getParentScrollLeft = (): number => {
-      if (scrollElement) {
-        return scrollElement.scrollLeft;
+      if (scrollElement()) {
+        return scrollElement().scrollLeft;
       }
       return 0;
     };
@@ -194,23 +208,25 @@ const TableHeader = defineComponent({
      * @returns
      */
     const handleMouseMove = (columnIndex: number, event: MouseEvent) => {
-      console.log('=====111', tableOptions.headerResizable, resizeIndicator.value.visible, tableOptions.headerOrderDraggable);
+      // console.log('=====111', tableOptions.headerResizable, resizeIndicator.value.visible, tableOptions.headerOrderDraggable);
       if (tableOptions.headerResizable && !resizeIndicator.value.visible) {
         const { currentTarget, pageX } = event;
         // FIXME: 研究currentTarget为空时的逻辑
         if (!(currentTarget instanceof HTMLElement)) {
           return;
         }
-        console.log('=====');
         
         const { left } = getElementOffset(currentTarget);
+        console.log('=====', left);
         const right = left + currentTarget.offsetWidth;
         // 判断是否靠近右侧边缘或者 靠近左侧边缘且不是第一个
         if (right - pageX < 8 || (pageX - left < 8 && columnIndex > 0)) {
           currentTarget.draggable = false;
           resizeIndicator.value.hover = true;
           const activeIndex =
-            right - pageX < 8 ? mouseEnterIndex.value : mouseEnterIndex.value - 1;
+            right - pageX < 8
+              ? mouseEnterIndex.value
+              : mouseEnterIndex.value - 1;
           resizeIndicator.value.activeIndex = activeIndex;
         } else {
           currentTarget.draggable = true;
@@ -219,9 +235,14 @@ const TableHeader = defineComponent({
       }
     };
 
+    /**
+     * 设置resize标识位置
+     * @param event
+     */
     const setResizeIndicatorPosition = (event: MouseEvent) => {
-      // FIXME: 调整$parent.$el的调用方式
-      const { left } = getElementOffset($parent.$el as HTMLElement);
+      const { left } = getElementOffset(parent?.refs.tableRef as HTMLElement);
+      console.log('00000', left);
+      
       resizeIndicator.value.left = getParentScrollLeft() + event.pageX - left;
     };
 
@@ -335,7 +356,9 @@ const TableHeader = defineComponent({
               onmousemove={(evt: MouseEvent) =>
                 handleMouseMove(columnIndex, evt)
               }
-              onmousedown={(evt: MouseEvent) => handleMouseDown(columnIndex, evt)}
+              onmousedown={(evt: MouseEvent) =>
+                handleMouseDown(columnIndex, evt)
+              }
               ondragstart={(evt: DragEvent) =>
                 handleHeaderDragStart(columnIndex, evt)
               }

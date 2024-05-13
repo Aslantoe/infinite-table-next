@@ -274,6 +274,10 @@ export default defineComponent({
         selectedColumn.value = params.column;
       });
 
+      emitter.on("column-resize", ({columnIndex, column, size}) => {
+        emit('column-resize', columnIndex, column, size)
+      });
+
       // FIXME: 修复无法正常传递table对象的问题
       // table = this;
     });

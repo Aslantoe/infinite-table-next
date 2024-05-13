@@ -60,6 +60,7 @@ export function px2num(str: string | number) {
  * @param {HTMLElement} el;
  */
 export function getClientSize(el: HTMLElement) {
+  
   if (el instanceof HTMLElement) {
     const { width, height } = el.getBoundingClientRect();
     return {
@@ -77,6 +78,7 @@ export function getClientSize(el: HTMLElement) {
  * @return {{top: number, left: number}}
  */
 export function getElementOffset(el: HTMLElement) {
+  
   const viewportOffset = el.getBoundingClientRect();
 
   const scrollLeft = window.pageXOffset !== undefined ? window.pageXOffset
