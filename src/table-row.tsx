@@ -50,10 +50,8 @@ const TableRow = defineComponent({
     },
   },
 
-  setup(props) {
-    // const tableStore: any = inject(tableStoreInjectKey);
+  setup(props, { attrs }) {
     const tableOptions: any = inject(tableOptionsInjectKey);
-
     const {
       isSameRow,
       _isSameColumn,
@@ -69,20 +67,12 @@ const TableRow = defineComponent({
       selectedColumn,
       focusedRow,
     } = useTableStore(tableOptions, "id", "table-row");
-    // const { isRowSelected, selectedColumn, focusedRow } = useTableData();
-    // const {
-    //   getFixedColumnStyle,
-    //   leftFixedColumns,
-    //   rightFixedColumns,
-    //   mainColumns,
-    //   leftFixedColumnWidth,
-    //   rightFixedColumnWidth,
-    //   allColumnsWidth,
-    // } = useTableColumn();
+    
 
     onMounted(() => {
+      console.log('加载table-row.tsx');
       console.log("row---", props.data, props.index, props.offsetX);
-      console.log("mainColumns", mainColumns.value);
+      // console.log("---------------leftFixedColumns", singleTableStore());
     });
 
     let dragoverColumnItem: TableColumnItem;
@@ -304,62 +294,58 @@ const TableRow = defineComponent({
       <div
         class={["infinite-table__row", extraAttrs.class]}
         draggable={tableOptions.rowDraggable}
-        {...{
-          style: {
-            ...extraAttrs.style,
-            width: `${allColumnsWidth}px`,
-            height: `${tableOptions.rowHeight}px`,
-          },
-          attrs: extraAttrs.attrs,
-          on: {
-            dragstart: (evt: DragEvent) => {
-              // 避免table-body再次触发相同类型的事件（例如dnd相关的事件)
-              evt.stopPropagation();
-              dispatchRowEvent(
-                "row-dragstart",
-                props.data,
-                dragoverColumnItem as any,
-                evt,
-                props.index
-              );
-            },
-            dragend: (evt: DragEvent) => {
-              evt.stopPropagation();
-              dispatchRowEvent(
-                "row-dragend",
-                props.data,
-                dragoverColumnItem as any,
-                evt,
-                props.index
-              );
-            },
-            dragover: (evt: DragEvent) => {
-              evt.stopPropagation();
-              dispatchRowEvent(
-                "row-dragover",
-                props.data,
-                dragoverColumnItem as any,
-                evt,
-                props.index
-              );
-            },
-            drop: (evt: DragEvent) => {
-              evt.stopPropagation();
-              dispatchRowEvent(
-                "row-drop",
-                props.data,
-                dragoverColumnItem as any,
-                evt,
-                props.index
-              );
-            },
-          },
+        style={{
+          ...extraAttrs.style,
+          width: `${allColumnsWidth}px`,
+          height: `${tableOptions.rowHeight}px`,
+        }}
+        {...attrs}
+        ondragstart={(evt: DragEvent) => {
+          // 避免table-body再次触发相同类型的事件（例如dnd相关的事件)
+          evt.stopPropagation();
+          dispatchRowEvent(
+            "row-dragstart",
+            props.data,
+            dragoverColumnItem as any,
+            evt,
+            props.index
+          );
+        }}
+        ondragend={(evt: DragEvent) => {
+          evt.stopPropagation();
+          dispatchRowEvent(
+            "row-dragend",
+            props.data,
+            dragoverColumnItem as any,
+            evt,
+            props.index
+          );
+        }}
+        ondragover={(evt: DragEvent) => {
+          evt.stopPropagation();
+          dispatchRowEvent(
+            "row-dragover",
+            props.data,
+            dragoverColumnItem as any,
+            evt,
+            props.index
+          );
+        }}
+        ondrop={(evt: DragEvent) => {
+          evt.stopPropagation();
+          dispatchRowEvent(
+            "row-drop",
+            props.data,
+            dragoverColumnItem as any,
+            evt,
+            props.index
+          );
         }}
       >
         {leftFixedColumns.value.map((column) =>
           renderTableCell({ data: column })
         )}
-        {/* <h1>{props.data?.name}</h1> */}
+        <h1>{leftFixedColumns.value}</h1>
 
         <RangeRender
           style={{ width: `${allColumnsWidth.value}px` }}

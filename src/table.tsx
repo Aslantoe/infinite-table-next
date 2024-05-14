@@ -139,6 +139,7 @@ export default defineComponent({
 
     provide(tableOptionsInjectKey, tableOptions);
 
+
     const {
       updateLayoutSize,
       layoutSize,
@@ -163,6 +164,8 @@ export default defineComponent({
       tableData,
       fixedData,
     } = useTableStore(tableOptions, props.rowKey);
+
+    provide('singleTableStore', useTableStore());
 
     let tableDefaultOptions: InfiniteTableDefaultOptions = {
       defaultEmptySlot: (h) => h("span", "暂无数据"),
@@ -203,7 +206,6 @@ export default defineComponent({
     watch(
       () => props.data,
       (newData: RowItemType[]) => {
-        console.log(3355, newData);
         updateData(newData);
       },
       { immediate: true, deep: true }
@@ -220,26 +222,21 @@ export default defineComponent({
     watch(
       () => props.tableColumns,
       (nextTableColumns: TableColumnOptions[]) => {
-        setColumns(nextTableColumns);
+        const columns = nextTableColumns.map(
+          (columnOption, index) =>
+            new TableColumnItem({
+              ...columnOption,
+              key: index.toString(),
+            })
+        );
+        doLayout(columns);  
       },
-      { deep: true }
+      { deep: true, immediate: true }
     );
 
-    const setColumns = (nextTableColumns: TableColumnOptions[]) => {
-      const columns = nextTableColumns.map(
-        (columnOption, index) =>
-          new TableColumnItem({
-            ...columnOption,
-            key: index.toString(),
-          })
-      );
-      console.log("table.tsx--watch--tableColumns-->", columns);
-      doLayout(columns);
-    };
-
     onMounted(() => {
-      setColumns(props.tableColumns);
-      console.log("onmounted", normalData.value);
+      console.log('加载table.tsx');
+      
       resizeObserver = new ResizeObserver((observerEntries) => {
         if (observerEntries && observerEntries.length > 0) {
           const entry = observerEntries[0];
@@ -249,7 +246,6 @@ export default defineComponent({
       });
 
       const it = document.getElementById("infinite-table") as Element;
-      console.log(2222, it);
       resizeObserver.observe(it as Element);
       const { height, width } = getClientSize(it as HTMLElement);
       _doLayout(width, height);
@@ -611,7 +607,7 @@ export default defineComponent({
         <div ref="scrollElement" class="infinite-table--scrollable">
           <TableHeader
             tableColumns={allTableColumns.value}
-            class={tableHeaderClass}
+            class={tableHeaderClass()}
           />
           {props.data.length > 0 && (
             <TableBody

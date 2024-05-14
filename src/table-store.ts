@@ -1,15 +1,20 @@
 import { ref, toRaw, computed, watch, inject } from "vue";
 import TableColumnItem from "@/hooks/useTableColumnItemHooks";
-import { RowKeyType, TableOptions, RowItemType, ColumnFixedType, tableOptionsInjectKey } from "@/common/types";
+import {
+  RowKeyType,
+  TableOptions,
+  RowItemType,
+  ColumnFixedType,
+  tableOptionsInjectKey,
+} from "@/common/types";
 import useTableData from "@/hooks/useTableDataHooks";
 import { get, getDataKey, intersection, isEmpty } from "@/utils/object";
 import { doColumnWidthLayout, getTableBodyHeight } from "@/table-layout";
 import { getScrollWidth } from "@/utils/layout";
 import { isSameColumn } from "@/hooks/utils";
 import { sumBy } from "@/utils/collection";
-import _ from 'lodash';
+import _ from "lodash";
 import emitter from "./event-emitter";
-
 
 export function defaultComparator(a: any, b: any): number {
   if (isEmpty(a) && isEmpty(b)) {
@@ -40,7 +45,6 @@ export interface SortedOption {
   order?: "asc" | "desc" | "nature";
 }
 
-
 export interface TableLayout {
   tableHeight: number;
   tableWidth: number;
@@ -56,16 +60,15 @@ export default function useTableStore(
 ) {
   let tableOptions: TableOptions;
   const tableOption: TableOptions | any = inject(tableOptionsInjectKey);
-  
-  tableOptions = _tableOption ? _tableOption : tableOption
-  
+
+  tableOptions = _tableOption ? _tableOption : tableOption;
+
   console.log(32321, from, tableOptions);
-  
+
   // const { allTableColumns, updateColumns } = useTableColumn();
   // const { tableData, normalData } = useTableData();
   const columnStore = ref<TableColumnItem[]>([]);
 
-  
   const layoutSize = ref<TableLayout>({
     tableHeight: 0,
     tableWidth: 0,
@@ -75,20 +78,21 @@ export default function useTableStore(
   });
   let table;
 
-  
-  let fixedKeys: string[];
-  
+  const fixedKeys = ref<string[]>();
+
   const tableData = ref<RowItemType[]>([]);
 
   const normalData = ref<RowItemType[]>([]);
-  
+
+  const fixedData = ref<RowItemType[]>([]);
+
   const focusedRow = ref<RowItemType | null>(null);
-  
+
   const selectedColumn = ref<TableColumnItem | null>();
-  
+
   const selectedRows = ref<RowItemType[]>([]);
   /**
-   * 
+   *
    * table的tableHeight, tableWidth，或tableHeaderHeight发生变化时
    * 应当调用此方法
    * 此方法会更新表格的layout数据
@@ -109,8 +113,11 @@ export default function useTableStore(
       viewportHeight: 0,
       viewportWidth: 0,
     };
-    console.log('updateLayoutSize--->doLayout--->allTableColumns--->', allTableColumns.value);
-    
+    console.log(
+      "updateLayoutSize--->doLayout--->allTableColumns--->",
+      allTableColumns.value
+    );
+
     doLayout(allTableColumns.value);
   };
 
@@ -128,15 +135,15 @@ export default function useTableStore(
 
   const doLayout = (columns: TableColumnItem[]) => {
     // debugger
-    
+
     const { tableHeight, tableWidth, tableHeaderHeight } = layoutSize.value;
     /**
      * 没有mounted的时候，tableHeight和tableWidth都是0
      * 此时只需要把columns信息暂存
      */
     if (columns.length === 0 || tableHeight === 0 || tableWidth === 0) {
-      console.log('此时只需要把columns信息暂存');
-      console.log('table-store-->doLayout-->', toRaw(columns));
+      console.log("此时只需要把columns信息暂存");
+      console.log("table-store-->doLayout-->", toRaw(columns));
       // debugger
       updateColumns(columns);
       return;
@@ -171,48 +178,54 @@ export default function useTableStore(
     // FIXME: 使用事件处理viewportHeight可能随着column改变而变化
     layoutSize.value.viewportHeight = viewportHeight;
     layoutSize.value.viewportWidth = viewportWidth;
-    console.log('calculatedColumns', calculatedColumns);
+    console.log("calculatedColumns", calculatedColumns);
     // debugger
     updateColumns(calculatedColumns);
   };
 
   // 所有列
   const allTableColumns = computed(() => {
-    const arr = _.concat(leftFixedColumns.value, mainColumns.value, rightFixedColumns.value);
+    const arr = _.concat(
+      leftFixedColumns.value,
+      mainColumns.value,
+      rightFixedColumns.value
+    );
     return arr;
   });
-  
+
   // 其他列
   const mainColumns = computed(() => {
     return columnStore.value.filter((item) => !item.fixed);
   });
-  
+
   // 左侧冻结列
   const leftFixedColumns = computed(() => {
     // debugger
+    console.log('left', columnStore.value);
+    
     return columnStore.value.filter((item) => item.fixed === "left");
   });
-  
+
   // 右侧冻结列
   const rightFixedColumns = computed(() => {
     return columnStore.value.filter((item) => item.fixed === "right");
   });
-  
+
   // 左侧冻结列宽
   const leftFixedColumnWidth = computed(() => {
     return sumBy(leftFixedColumns.value, (item) => item.width);
   });
-  
+
   // 右侧冻结列宽
   const rightFixedColumnWidth = computed(() => {
     return sumBy(rightFixedColumns.value, (item) => item.width);
   });
-  
+
   // 所有列宽
   const allColumnsWidth = computed(() => {
     return sumBy(allTableColumns.value, (item: any) => item.width);
   });
-  
+
   // 列偏移
   const columnOffset = computed(() => {
     let sum = 0;
@@ -224,7 +237,7 @@ export default function useTableStore(
       return sum;
     });
   });
-  
+
   /**
    * 获取column的fixed style
    * @param column
@@ -241,7 +254,7 @@ export default function useTableStore(
     }
     return {};
   };
-  
+
   const fixedPositionMap = computed(() => {
     const map = {
       left: new Map(),
@@ -256,7 +269,7 @@ export default function useTableStore(
         map.left.set(i, prevValue + prevColumn.width);
       }
     }
-  
+
     for (let i = rightFixedColumns.value.length - 1; i >= 0; i -= 1) {
       if (i === rightFixedColumns.value.length - 1) {
         map.right.set(i, 0);
@@ -268,18 +281,18 @@ export default function useTableStore(
     }
     return map;
   });
-  
+
   // 列下标
   const findColumnIndex = (column: TableColumnItem) => {
     return allTableColumns.value.indexOf(column);
   };
-  
+
   // 列偏移
   const getColumnOffset = (column: TableColumnItem): number => {
     const columnIndex = findColumnIndex(column);
     return columnOffset.value[columnIndex];
   };
-  
+
   const getColumnsByFixed = (fixed: ColumnFixedType) => {
     switch (fixed) {
       case "left":
@@ -290,33 +303,38 @@ export default function useTableStore(
         return mainColumns.value;
     }
   };
-  
+
   const findRowIndex = (key: string): number => {
     const { rowKey } = tableOptions;
-    return normalData.value.findIndex((item) => getDataKey(item, rowKey) === key);
+    return normalData.value.findIndex(
+      (item) => getDataKey(item, rowKey) === key
+    );
   };
 
-  
   const updateColumns = (columns: TableColumnItem[]) => {
     columnStore.value = columns;
     // debugger
-    console.log('useTbaleColumnHooks-->updateColumns-->columnStore.value-->', columnStore.value);
+    console.log(
+      "useTbaleColumnHooks-->updateColumns-->columnStore.value-->",
+      columnStore.value
+    );
   };
-  
+
   const clearColumns = () => {
     columnStore.value = [];
   };
 
-  const fixedData = (): RowItemType[] => {
-    const set = new Set(fixedKeys);
-    return tableData.value.filter((dataItem) =>
-      set.has(get(dataItem, tableOptions.rowKey))
-    );
-  };
-  
-  
+  // const fixedData = (): RowItemType[] => {
+  //   const set = new Set(fixedKeys.value);
+  //   console.log('fixedData', tableData.value);
+
+  //   return tableData.value.filter((dataItem) =>
+  //     set.has(get(dataItem, tableOptions.rowKey))
+  //   );
+  // };
+
   const sortedOption = ref<SortedOption>({ column: null, order: "nature" });
-  
+
   const compareDataItem = (data: RowItemType[]) => {
     const { column, order } = sortedOption.value;
     if (!order || !column || order === "nature") {
@@ -336,33 +354,40 @@ export default function useTableStore(
       return comparator.call(null, value1, value2, row1, row2) * descFlag;
     });
   };
-  
+
+  /**
+   * 设置数据
+   */
   const updateData = (nextData: RowItemType[]) => {
     console.log(9988, nextData);
-    
+
     if (tableOptions.freezeRow) {
       tableData.value = nextData.map((item: any) => Object.freeze(item));
     } else {
       tableData.value = nextData;
     }
 
-   const set = new Set(fixedKeys);
-    const data = tableData.value.filter(
+    const set = new Set(fixedKeys.value);
+
+    const Ndata = tableData.value.filter(
       (dataItem) => !set.has(getDataKey(dataItem, rowKey))
     );
+    normalData.value = compareDataItem(toRaw(Ndata));
 
-    normalData.value = compareDataItem(toRaw(data));
-    console.log('normal-data',  normalData.value);
+    const Fdata = tableData.value.filter((dataItem) => set.has(get(dataItem, tableOptions.rowKey)));
+    fixedData.value = toRaw(Fdata);
 
+    console.log("normal-data", normalData.value);
+    console.log("fixed-data", normalData.value);
   };
-  
+
   const updateFixedKeys = (keys: string[]) => {
-    console.log('updateFixedKeys--', keys);
-    fixedKeys = keys;
+    console.log("updateFixedKeys--", keys);
+    fixedKeys.value = keys;
   };
-  
+
   const updateSortedOption = (sortedOption: SortedOption) => {
-    console.log('updatesortedOption--', sortedOption);
+    console.log("updatesortedOption--", sortedOption);
     const { column: prevColumn, order: prevOrder } = sortedOption;
     const { column } = sortedOption;
     let { order } = sortedOption;
@@ -382,11 +407,11 @@ export default function useTableStore(
     }
     sortedOption = { order, column };
   };
-  
+
   const clearSelectedRows = () => {
     selectedRows.value = [];
   };
-  
+
   const addSelectedRows = (...rows: RowItemType[]) => {
     rows.forEach((item, _index) => {
       if (!isRowSelected(item)) {
@@ -394,7 +419,7 @@ export default function useTableStore(
       }
     });
   };
-  
+
   const removeSelectedRows = (...rows: RowItemType[]) => {
     rows.forEach((item, _rowIndex: number) => {
       const index = findSelectedRowIndex(item);
@@ -403,55 +428,62 @@ export default function useTableStore(
       }
     });
   };
-  
+
   const updateFocusedRow = (row: RowItemType) => {
     focusedRow.value = row;
   };
-  
-  watch(selectedRows, () => {
-    if (table) {
-      emitter.emit("current-change", selectedRows.value);
-    }
-  }, { deep: true });
-  
-  watch(tableData, () => {
-    /**
-     * 当数据产生变化时，需要更新selectedRows
-     * 以确保current-change事件抛出数据的正确性
-     * 同时将已经不存在的数据从selectedRows中清除
-     */
-    const selectedRowIdList = selectedRows.value.map((item) =>
-      getDataKey(item, rowKey.value)
-    );
-    const set = new Set(selectedRowIdList);
-    const nextSelectedRows: any[] = [];
-    for (let i = 0; i < tableData.value.length; i += 1) {
-      const item = tableData.value[i];
-      if (set.has(getDataKey(item, rowKey.value))) {
-        nextSelectedRows.push(item);
+
+  watch(
+    selectedRows,
+    () => {
+      if (table) {
+        emitter.emit("current-change", selectedRows.value);
       }
-    }
-    const commonItem = intersection(selectedRows.value, nextSelectedRows);
-    if (
-      commonItem.size !== selectedRows.value.length ||
-      commonItem.size !== nextSelectedRows.length
-    ) {
-      selectedRows.value = nextSelectedRows;
-    }
-    // FIXME: 添加focusRow的修改方法
-  }, { deep: true });
-  
+    },
+    { deep: true }
+  );
+
+  watch(
+    tableData,
+    () => {
+      /**
+       * 当数据产生变化时，需要更新selectedRows
+       * 以确保current-change事件抛出数据的正确性
+       * 同时将已经不存在的数据从selectedRows中清除
+       */
+      const selectedRowIdList = selectedRows.value.map((item) =>
+        getDataKey(item, rowKey.value)
+      );
+      const set = new Set(selectedRowIdList);
+      const nextSelectedRows: any[] = [];
+      for (let i = 0; i < tableData.value.length; i += 1) {
+        const item = tableData.value[i];
+        if (set.has(getDataKey(item, rowKey.value))) {
+          nextSelectedRows.push(item);
+        }
+      }
+      const commonItem = intersection(selectedRows.value, nextSelectedRows);
+      if (
+        commonItem.size !== selectedRows.value.length ||
+        commonItem.size !== nextSelectedRows.length
+      ) {
+        selectedRows.value = nextSelectedRows;
+      }
+      // FIXME: 添加focusRow的修改方法
+    },
+    { deep: true }
+  );
+
   const findSelectedRowIndex = (row: RowItemType): number => {
     const rowDateKey = getDataKey(row, rowKey.value);
     return selectedRows.value.findIndex(
       (item) => getDataKey(item, rowKey.value) === rowDateKey
     );
   };
-  
+
   const isRowSelected = (row: RowItemType): boolean => {
     return findSelectedRowIndex(row) >= 0;
   };
-
 
   return {
     layoutSize,
@@ -490,6 +522,6 @@ export default function useTableStore(
     updateSortedOption,
     updateFixedKeys,
     updateData,
-    fixedData
+    fixedData,
   };
 }

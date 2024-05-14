@@ -1,4 +1,4 @@
-import Vue, {
+import {
   PropType,
   defineComponent,
   ref,
@@ -6,19 +6,13 @@ import Vue, {
   onMounted,
   onBeforeUnmount,
   watch,
+  reactive,
 } from "vue";
-import {
-  tableOptionsInjectKey,
-  tableStoreInjectKey,
-  RowItemType,
-  TableOptions,
-} from "@/common/types";
+import { tableOptionsInjectKey, RowItemType } from "@/common/types";
 import useTableStore from "@/table-store";
-import useTableData from "./hooks/useTableDataHooks";
 import TableRow from "./table-row";
 import RangeRender from "./render/range-render.vue";
 import emitter from "./event-emitter";
-import useTableColumn from "./hooks/useTbaleColumnHooks";
 
 const TableBody = defineComponent({
   props: {
@@ -26,36 +20,32 @@ const TableBody = defineComponent({
       type: Array as PropType<RowItemType[]>,
       required: true,
       default: () => [],
-    }
+    },
   },
   setup(props, { attrs }) {
-    // let tableStore: any = inject(tableStoreInjectKey)
+    const tableBodyRef = ref();
 
     const tableOptions: any = inject(tableOptionsInjectKey);
 
-    const { layoutSize, allColumnsWidth, fixedData, normalData, allTableColumns, tableData } = useTableStore(tableOptions, 'id', 'table-body');
-    
+    const {
+      layoutSize,
+      allColumnsWidth,
+      fixedData
+    } = useTableStore(tableOptions, "id", "table-body");
 
-    // console.log('table-body', normalData.value);
-    
-    // const { fixedData, normalData } = useTableData();
-    // const { allColumnsWidth } = useTableColumn();
-
-    const tableBody = ref<HTMLElement>();
-
-    let scroll: HTMLElement;
-    let grid = { offsetX: 0, offsetY: 0 };
+    const scroll = ref();
+    const grid = reactive({ offsetX: 0, offsetY: 0 });
 
     onMounted(() => {
-      console.log('table-body----', tableData.value, normalData.value);
+      console.log('加载table-body.tsx');
 
-      // scroll = getScrollElement();
-      // scroll.addEventListener('scroll', handleScroll);
-      // handleScroll();
+      scroll.value = getScrollElement();
+      scroll.value.addEventListener("scroll", handleScroll);
+      handleScroll();
     });
 
     onBeforeUnmount(() => {
-      // scroll.removeEventListener('scroll', handleScroll);
+      scroll.value.removeEventListener("scroll", handleScroll);
     });
 
     const handleScroll = () => {
@@ -64,13 +54,15 @@ const TableBody = defineComponent({
     };
 
     const changeOffsetIndex = () => {
-      const { scrollTop, scrollLeft } = scroll;
+      const { scrollTop, scrollLeft } = scroll.value;
       grid.offsetX = scrollLeft;
       grid.offsetY = scrollTop;
     };
 
-    const getScrollElement = (): HTMLElement => {
-      return $el.closest(".infinite-table--scrollable") as HTMLElement;
+    const getScrollElement = () => {
+      return tableBodyRef.value.closest(
+        ".infinite-table--scrollable"
+      ) as HTMLElement;
     };
 
     // watch(data, () => {
@@ -80,16 +72,16 @@ const TableBody = defineComponent({
     const slots = {
       default: (slotProps: { data: RowItemType; index: number }) => {
         const { data, index } = slotProps;
-        console.log('slots', data, index); 
+        console.log("slots", data, index);
         return (
           <TableRow
-            index={index + fixedData.length}
+            index={index + fixedData.value.length}
             offset-x={grid.offsetX}
             data={data}
           />
         );
       },
-    }
+    };
 
     const renderNormalRows = () => (
       <RangeRender
@@ -99,7 +91,7 @@ const TableBody = defineComponent({
         data-key={tableOptions.rowKey}
         viewport-size={
           layoutSize.value.viewportHeight -
-          fixedData.length * tableOptions.rowHeight
+          fixedData.value.length * tableOptions.rowHeight
         }
         offset={grid.offsetY}
         trail-size={2}
@@ -132,20 +124,20 @@ const TableBody = defineComponent({
 
     return () => (
       <div
-        ref="tableBody"
+        ref={tableBodyRef}
         class="infinite-table__body"
         style={{
           height: `${layoutSize.value.viewportHeight}px`,
-          "transform-style": fixedData.length >= 0 ? "preserve-3d" : "initial",
+          "transform-style": fixedData.value.length >= 0 ? "preserve-3d" : "initial",
         }}
         {...attrs}
       >
-        { fixedData.length > 0 && renderFixedRow() }
-        { renderNormalRows() }
+        {fixedData.value.length > 0 && renderFixedRow()}
+        {renderNormalRows()}
         <div
           style={{
             transform: `translateY(${
-              normalData.value.length * tableOptions.rowHeight
+              props.normalData.length * tableOptions.rowHeight
             }px)`,
             width: `${allColumnsWidth.value}px`,
             position: "absolute",

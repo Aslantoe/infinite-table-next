@@ -57,6 +57,7 @@ const columns = reactive([
   {
     label: "姓名",
     prop: "name",
+    fixed: "left",
     width: 100,
   },
   {

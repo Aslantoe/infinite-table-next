@@ -144,9 +144,9 @@ const componentProps = computed(() => {
   };
 });
 
-let viewId = 0;
+const viewId = ref(0);
 
-let cacheViewList: ViewItem[] = [];
+const cacheViewList = ref<ViewItem[]>([]);
 
 let activeViewMap: Map<string, ViewItem> = new Map();
 
@@ -176,7 +176,7 @@ const addToPool = (
     key,
   };
 
-  viewId += 1;
+  viewId.value += 1;
 
   Object.defineProperty(view, "props", {
     enumerable: false,
@@ -195,7 +195,7 @@ const addToPool = (
  */
 const invalidViewItem = (viewItem: ViewItem): void => {
   activeViewMap.delete(viewItem.props.key);
-  cacheViewList.push(viewItem);
+  cacheViewList.value.push(viewItem);
   // eslint-disable-next-line no-param-reassign
   viewItem.position = -99999;
   // eslint-disable-next-line no-param-reassign
@@ -269,7 +269,7 @@ const handleIndexChange = (): void => {
     console.log("viewitem");
 
     if (!viewItem) {
-      viewItem = cacheViewList.pop();
+      viewItem = cacheViewList.value.pop();
       if (viewItem) {
         viewItem.data = item;
         viewItem.props.key = key;

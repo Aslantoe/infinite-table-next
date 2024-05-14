@@ -58,9 +58,11 @@ const TableHeader = defineComponent({
     // console.log("tableHeader", props.tableColumns);
     // console.log("tableOptions", tableOptions.headerResizable);
 
-    // onMounted(() => {
-    //   console.log(45454545, props.tableColumns);
-    // });
+    onMounted(() => {
+      // console.log(45454545, props.tableColumns);
+      console.log('加载table-header.tsx');
+
+    });
 
     const resizeIndicator = ref<ResizeIndicator>({
       activeIndex: -1,
