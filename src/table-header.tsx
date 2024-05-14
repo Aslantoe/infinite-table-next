@@ -42,7 +42,6 @@ const TableHeader = defineComponent({
   setup(props) {
     const parent = getCurrentInstance()?.parent;
 
-    // const tableStore: any = inject(tableStoreInjectKey);
     // @ts-ignore
     const tableOptions: TableOptions = inject(tableOptionsInjectKey);
     // const { sortedOption, updateSortedOption } = useTableData();
@@ -59,9 +58,9 @@ const TableHeader = defineComponent({
     // console.log("tableHeader", props.tableColumns);
     // console.log("tableOptions", tableOptions.headerResizable);
 
-    onMounted(() => {
-      console.log(45454545, props.tableColumns);
-    });
+    // onMounted(() => {
+    //   console.log(45454545, props.tableColumns);
+    // });
 
     const resizeIndicator = ref<ResizeIndicator>({
       activeIndex: -1,
@@ -75,6 +74,9 @@ const TableHeader = defineComponent({
       return parent?.refs.scrollElement as HTMLElement;
     };
 
+    /**
+     * 设置表头class
+     */
     const getTableCellClass = (
       column: TableColumnItem,
       columnIndex: number
@@ -164,16 +166,15 @@ const TableHeader = defineComponent({
           const { activeIndex, startX } = resizeIndicator.value;
           const { pageX } = event;
           const activeColumn = props.tableColumns[activeIndex];
-          console.log("列宽设置", activeColumn);
-
           let delta = pageX - startX;
-          console.log('delta', delta);
-          console.log('activeColumn.width', activeColumn.width);
-          console.log('TableConfig.minColumnWidth', TableConfig.minColumnWidth);
           if (activeColumn.width + delta < TableConfig.minColumnWidth) {
             delta = TableConfig.minColumnWidth - activeColumn.width;
           }
-          emitter.emit("column-resize", {columnIndex: activeIndex, column: activeColumn, size: delta});
+          emitter.emit("column-resize", {
+            columnIndex: activeIndex,
+            column: activeColumn,
+            size: delta,
+          });
         }
         resizeIndicator.value.visible = false;
         document.body.removeEventListener(
@@ -208,16 +209,13 @@ const TableHeader = defineComponent({
      * @returns
      */
     const handleMouseMove = (columnIndex: number, event: MouseEvent) => {
-      // console.log('=====111', tableOptions.headerResizable, resizeIndicator.value.visible, tableOptions.headerOrderDraggable);
       if (tableOptions.headerResizable && !resizeIndicator.value.visible) {
         const { currentTarget, pageX } = event;
         // FIXME: 研究currentTarget为空时的逻辑
         if (!(currentTarget instanceof HTMLElement)) {
           return;
         }
-        
         const { left } = getElementOffset(currentTarget);
-        console.log('=====', left);
         const right = left + currentTarget.offsetWidth;
         // 判断是否靠近右侧边缘或者 靠近左侧边缘且不是第一个
         if (right - pageX < 8 || (pageX - left < 8 && columnIndex > 0)) {
@@ -241,15 +239,17 @@ const TableHeader = defineComponent({
      */
     const setResizeIndicatorPosition = (event: MouseEvent) => {
       const { left } = getElementOffset(parent?.refs.tableRef as HTMLElement);
-      console.log('00000', left);
-      
       resizeIndicator.value.left = getParentScrollLeft() + event.pageX - left;
     };
 
     const handleResizeIndicatorMove = (event: MouseEvent) => {
       setResizeIndicatorPosition(event);
     };
-
+    /**
+     * 
+     * @param columnIndex 
+     * @param event 
+     */
     const handleHeaderDragStart = (columnIndex: number, event: DragEvent) => {
       if (event.dataTransfer) {
         event.dataTransfer.setData(
@@ -272,6 +272,12 @@ const TableHeader = defineComponent({
 
     const handleHeaderDragEnd = () => {};
 
+    /**
+     * 表头列拖拽排序
+     * @param dropIndex 
+     * @param event 
+     * @returns 
+     */
     const handleHeaderDrop = (dropIndex: number, event: DragEvent) => {
       if (!event.dataTransfer) {
         return;
@@ -283,8 +289,7 @@ const TableHeader = defineComponent({
       if (!Number.isNaN(dragIndex)) {
         const dragItem = props.tableColumns[dragIndex];
         const dropItem = props.tableColumns[dropIndex];
-        emitter.emit("InfiniteTable", {
-          e: "header-drop",
+        emitter.emit("header-drop", {
           dragIndex,
           dragItem,
           dropIndex,
@@ -310,12 +315,16 @@ const TableHeader = defineComponent({
         sortedOption.value.order === order
       );
     };
-
+    /**
+     * 列排序
+     * @param column 
+     * @param order 
+     */
     const handleColumnSort = (
       column: TableColumnItem,
       order?: "asc" | "desc" | "nature"
     ) => {
-      console.log(11111111, order);
+      // console.log(11111111, order);
 
       // 如果column可以排序，并且TableHeader不处于resize模式中，就设置sortOption
       if (column.sortable) {
@@ -371,8 +380,7 @@ const TableHeader = defineComponent({
                 if (column.sortable) {
                   handleColumnSort(column);
                 } else {
-                  emitter.emit("InfiniteTable", {
-                    e: "header-column-click",
+                  emitter.emit("header-column-click", {
                     column,
                     evt,
                   });
@@ -414,6 +422,7 @@ const TableHeader = defineComponent({
             </div>
           );
         })}
+
         {resizeIndicator.value.visible && (
           <div
             ref="resizeIndicator"

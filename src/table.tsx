@@ -136,10 +136,8 @@ export default defineComponent({
       freezeRow: false,
       topFixedKeys: props.topFixedKeys,
     });
-    
-  
-    provide(tableOptionsInjectKey, tableOptions);
 
+    provide(tableOptionsInjectKey, tableOptions);
 
     const {
       updateLayoutSize,
@@ -164,8 +162,7 @@ export default defineComponent({
       normalData,
       tableData,
       fixedData,
-     } =
-      useTableStore(tableOptions, props.rowKey);
+    } = useTableStore(tableOptions, props.rowKey);
 
     let tableDefaultOptions: InfiniteTableDefaultOptions = {
       defaultEmptySlot: (h) => h("span", "暂无数据"),
@@ -209,7 +206,7 @@ export default defineComponent({
         console.log(3355, newData);
         updateData(newData);
       },
-      {immediate: true, deep: true}
+      { immediate: true, deep: true }
     );
 
     watch(
@@ -223,7 +220,7 @@ export default defineComponent({
     watch(
       () => props.tableColumns,
       (nextTableColumns: TableColumnOptions[]) => {
-        setColumns(nextTableColumns)
+        setColumns(nextTableColumns);
       },
       { deep: true }
     );
@@ -238,10 +235,10 @@ export default defineComponent({
       );
       console.log("table.tsx--watch--tableColumns-->", columns);
       doLayout(columns);
-    }
+    };
 
     onMounted(() => {
-      setColumns(props.tableColumns)
+      setColumns(props.tableColumns);
       console.log("onmounted", normalData.value);
       resizeObserver = new ResizeObserver((observerEntries) => {
         if (observerEntries && observerEntries.length > 0) {
@@ -274,9 +271,16 @@ export default defineComponent({
         selectedColumn.value = params.column;
       });
 
-      emitter.on("column-resize", ({columnIndex, column, size}) => {
-        emit('column-resize', columnIndex, column, size)
+      emitter.on("column-resize", ({ columnIndex, column, size }) => {
+        emit("column-resize", columnIndex, column, size);
       });
+
+      emitter.on(
+        "header-drop",
+        ({ dragIndex, dragItem, dropIndex, dropItem }) => {
+          emit("header-drop", dragIndex, dragItem, dropIndex, dropItem);
+        }
+      );
 
       // FIXME: 修复无法正常传递table对象的问题
       // table = this;
@@ -286,8 +290,8 @@ export default defineComponent({
     //   leading: false, trailing: true, wait: 200, maxWait: 2000,
     // })
     const _doLayout = (width: number, height: number) => {
-      console.log('updateLayoutSize', width, height);
-      
+      console.log("updateLayoutSize", width, height);
+
       updateLayoutSize({
         ...layoutSize.value,
         tableHeaderHeight: tableOptions.headerHeight,
@@ -605,7 +609,10 @@ export default defineComponent({
         // "!click": () => focus(),
       >
         <div ref="scrollElement" class="infinite-table--scrollable">
-          <TableHeader tableColumns={allTableColumns.value} class={tableHeaderClass} />
+          <TableHeader
+            tableColumns={allTableColumns.value}
+            class={tableHeaderClass}
+          />
           {props.data.length > 0 && (
             <TableBody
               normalData={normalData.value}
