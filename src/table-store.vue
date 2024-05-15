@@ -1,15 +1,15 @@
 <script lang="ts">
-import Vue, { defineComponent, reactive, ref, PropType } from "vue";
+import { defineComponent, reactive, ref, PropType, inject } from "vue";
 import { getDataKey } from "./utils/object";
 import TableColumnItem from "./store/table-column-item";
-import { RowKeyType, TableOptions, RowItemType } from "./common/types";
+import { RowKeyType, TableOptions, RowItemType, tableOptionsInjectKey } from "./common/types";
 import TableDataStoreMixin from "./store/table-data-store.vue";
 import { doColumnWidthLayout, getTableBodyHeight } from "./table-layout";
 import { getScrollWidth } from "./utils/layout";
 import { isSameColumn } from "./store/utils";
 import { sumBy } from "./utils/collection";
 import TableColumnStoreMixin from "./store/table-column-store.vue";
-import { debounce } from "lodash-es";
+// import { debounce } from "lodash-es";
 
 export interface TableLayout {
   tableHeight: number;
@@ -20,15 +20,6 @@ export interface TableLayout {
 }
 export default defineComponent({
   mixins: [TableColumnStoreMixin, TableDataStoreMixin],
-  props: {
-    tableOptions: {
-      type: Object as PropType<TableOptions>,
-      required: true,
-    },
-    rowKey: {
-      type: [Function, String] as PropType<RowKeyType>,
-    },
-  },
   data(this, vm) {
     const layoutSize = reactive<TableLayout>({
       tableHeight: 0,
@@ -37,17 +28,18 @@ export default defineComponent({
       viewportHeight: 0,
       viewportWidth: 0,
     });
+    const tableOptions = inject(tableOptionsInjectKey);
+
     const table = ref();
+    
     return {
       layoutSize,
       table,
+      tableOptions
     };
   },
 
   methods: {
-    reLayoutDebounce() {
-      return debounce(this.reLayout.bind(this), 100)();
-    },
     /**
      * table的tableHeight, tableWidth，或tableHeaderHeight发生变化时
      * 应当调用此方法

@@ -1,8 +1,8 @@
 <script lang="ts">
-import { defineComponent, ref, reactive } from "vue";
+import { defineComponent, ref, reactive, inject } from "vue";
 import { get, getDataKey, intersection, isEmpty } from "../utils/object";
 import TableColumnItem from "./table-column-item";
-import { RowItemType, RowKeyType, TableOptions } from "../common/types";
+import { RowItemType, RowKeyType, TableOptions, tableOptionsInjectKey } from "../common/types";
 import { isSameColumn } from "./utils";
 
 export function defaultComparator(a: any, b: any): number {
@@ -35,14 +35,15 @@ export interface SortedOption {
 }
 
 export default defineComponent({
-  data(this, vm) {
+  data() {
     const rowKey = ref<RowKeyType>();
     const table = ref();
-    const tableOptions = ref<TableOptions>();
+    const tableOptions = inject(tableOptionsInjectKey);
     const fixedKeys = ref<string[]>([]);
     const tableData = ref<RowItemType[]>([]);
     const focusedRow = ref<RowItemType | null>(null);
     const selectedColumn = ref<TableColumnItem | null>(null);
+    const normalData = ref<RowItemType[]>([]);
     const selectedRows = ref<RowItemType[]>([]);
     const sortedOption = reactive<SortedOption>({
       column: null,
@@ -58,6 +59,7 @@ export default defineComponent({
       selectedColumn,
       selectedRows,
       sortedOption,
+      normalData
     };
   },
 
@@ -69,13 +71,15 @@ export default defineComponent({
       );
     },
 
-    normalData() {
-      const set = new Set(this.fixedKeys);
-      const data = this.tableData.filter(
-        (dataItem) => !set.has(getDataKey(dataItem, this.rowKey))
-      );
-      return this.compareDataItem(data);
-    },
+    // normalData() {
+    //   const set = new Set(this.fixedKeys);
+    //   const data = this.tableData.filter(
+    //     (dataItem) => !set.has(getDataKey(dataItem, this.tableOptions.rowKey))
+    //   );
+    //   console.log('-----normalData-----', this.compareDataItem(data));
+      
+    //   return this.compareDataItem(data);
+    // },
   },
 
   methods: {
@@ -105,6 +109,16 @@ export default defineComponent({
       } else {
         this.tableData = nextData;
       }
+      console.log('-----updateData---', this.tableData);
+
+      const set = new Set(this.fixedKeys);
+      const data = this.tableData.filter(
+        (dataItem) => !set.has(getDataKey(dataItem, this.tableOptions.rowKey))
+      );
+      
+      this.normalData = this.compareDataItem(data);
+      
+      console.log('-----normalData-----', this.compareDataItem(data));
     },
 
     updateFixedKeys(keys: string[]) {

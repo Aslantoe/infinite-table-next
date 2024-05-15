@@ -16,11 +16,12 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import InfiniteTableNext from "./table.tsx";
+import InfiniteTableNext from "./table.vue";
 
 const tableData = ref([
   { id: "1", name: "jack", age: "25", address: "star city" },
   { id: "2", name: "alice", age: "26", address: "star city" },
+  { id: "3", name: "bbbb", age: "26bbbb", address: "bbbbbstar city" },
 ]);
 
 /**
@@ -57,7 +58,7 @@ const columns = reactive([
   {
     label: "姓名",
     prop: "name",
-    fixed: "left",
+    // fixed: "left",
     width: 100,
   },
   {

@@ -1,9 +1,9 @@
 export const portal = {
-  inserted(el: Element) {
+  mounted(el: Element) {
     document.body.appendChild(el);
   },
 
-  unbind(el: Element) {
+  beforeUnmount(el: Element) {
     if ((el as any)._transitionClasses && (el as any).__vue__) {
       // Will be removed by transition
       return;

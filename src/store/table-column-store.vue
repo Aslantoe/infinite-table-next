@@ -1,7 +1,5 @@
 <script lang="ts">
-/* eslint-disable no-underscore-dangle */
 import { defineComponent, ref } from "vue";
-
 import { sumBy } from "../utils/collection";
 import TableColumnItem from "./table-column-item";
 import { RowItemType, TableOptions, ColumnFixedType } from "../common/types";
