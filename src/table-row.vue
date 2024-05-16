@@ -193,8 +193,7 @@ export default defineComponent({
       };
       return (
         <div
-          class={cellClassNames}
-          staticClass="infinite-table__cell infinite-table__cell--ellipsis"
+          class={['infinite-table__cell infinite-table__cell--ellipsis', cellClassNames]}
           {...{
             attrs: extraAttrs.attrs,
             style: {
@@ -275,8 +274,7 @@ export default defineComponent({
     const extraAttrs = this.getExtraRowAttrs(this.data, this.index);
     return (
       <div
-        class={extraAttrs.class}
-        staticClass="infinite-table__row"
+        class={['infinite-table__row', extraAttrs.class]}
         draggable={tableOptions.rowDraggable}
         {...{
           style: {
@@ -345,11 +343,7 @@ export default defineComponent({
             leftFixedColumnWidth -
             rightFixedColumnWidth
           }
-          {...{
-            scopedSlots: {
-              default: this.renderTableCell,
-            },
-          }}
+          v-slots={this.renderTableCell}
         />
         {rightFixedColumns.map((column) =>
           this.renderTableCell({ data: column })

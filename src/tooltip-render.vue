@@ -73,8 +73,7 @@ export default defineComponent({
         <div
           v-portal
           ref="popper"
-          class={_tooltipWrapperClass.value}
-          staticClass="infinite-table__tooltip"
+          class={['infinite-table__tooltip', _tooltipWrapperClass.value]}
           role="tooltip"
         >
           {_tooltipVnode.value}

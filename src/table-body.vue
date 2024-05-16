@@ -65,21 +65,21 @@ export default defineComponent({
 
     slots() {
       return {
-      default: (slotProps: { data: RowItemType; index: number }) => {
-        const { data, index } = slotProps;
-        return (
-          <TableRow
-            index={index + this.tableStore.fixedData.length}
-            offset-x={this.grid.offsetX}
-            data={data}
-          />
-        );
-      },
-    }
+        default: (slotProps: { data: RowItemType; index: number }) => {
+          const { data, index } = slotProps;
+          return (
+            <TableRow
+              index={index + this.tableStore.fixedData.length}
+              offset-x={this.grid.offsetX}
+              data={data}
+            />
+          );
+        },
+      };
     },
 
     renderNormalRows() {
-      const tableStore  = this.tableStore;
+      const tableStore = this.tableStore;
       return (
         <range-render
           data={tableStore.normalData}
@@ -129,7 +129,7 @@ export default defineComponent({
   },
   render() {
     const tableStore = this.tableStore;
-    console.log('table-body-----', tableStore);
+    console.log("table-body-----", tableStore);
     return (
       <div
         ref="tableBody"

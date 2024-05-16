@@ -43,7 +43,7 @@ export default defineComponent({
       left: -9999,
     });
     // console.log('======-+++=', test);
-    
+
     return {
       resizeIndicator,
       tableStore,
@@ -294,7 +294,7 @@ export default defineComponent({
   },
   render() {
     const { allTableColumns, allColumnsWidth } = this.tableStore;
-    
+
     return (
       <div
         class="infinite-table__table-header"
@@ -306,14 +306,16 @@ export default defineComponent({
         {allTableColumns.map((column, columnIndex) => (
           <div
             key={columnIndex}
-            class={this.getTableCellClass(column, columnIndex)}
+            class={[
+              "infinite-table__cell",
+              this.getTableCellClass(column, columnIndex),
+            ]}
             style={{
               width: `${column.width}px`,
               ...this.getFixedStyle(column),
             }}
             draggable={this.tableOptions.headerOrderDraggable}
             {...{
-              staticClass: "infinite-table__cell",
               on: {
                 mouseenter: (evt: MouseEvent) =>
                   this.handleMouseEnter(evt, column, columnIndex),
@@ -352,20 +354,24 @@ export default defineComponent({
               {column.sortable && (
                 <div class="infinite-table__table-header__sortable">
                   <div
-                    class={{
-                      active: this.getActiveClass(column, "asc"),
-                    }}
-                    staticClass="infinite-table__sortable ascending"
+                    class={[
+                      "infinite-table__sortable ascending",
+                      {
+                        active: this.getActiveClass(column, "asc"),
+                      },
+                    ]}
                     onClick={(evt: MouseEvent) => {
                       evt.stopImmediatePropagation();
                       this.handleColumnSort(column, "asc");
                     }}
                   />
                   <div
-                    class={{
-                      active: this.getActiveClass(column, "desc"),
-                    }}
-                    staticClass="infinite-table__sortable descending"
+                    class={[
+                      "infinite-table__sortable descending",
+                      {
+                        active: this.getActiveClass(column, "desc"),
+                      },
+                    ]}
                     onClick={(evt: MouseEvent) => {
                       evt.stopImmediatePropagation();
                       this.handleColumnSort(column, "desc");
