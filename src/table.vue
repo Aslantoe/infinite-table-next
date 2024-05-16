@@ -4,9 +4,8 @@ import {
   PropType,
   defineComponent,
   ref,
+  h,
   reactive,
-  provide,
-  nextTick,
 } from "vue";
 import TableColumnItem, { TableColumnOptions } from "./store/table-column-item";
 import { getDataKey } from "./utils/object";
@@ -15,8 +14,6 @@ import {
   RowKeyType,
   TableOptions,
   InfiniteTableDefaultOptions,
-  tableOptionsInjectKey,
-  tableStoreInjectKey,
 } from "./common/types";
 import TableHeader from "./table-header.vue";
 import TableBody from "./table-body.vue";
@@ -140,25 +137,6 @@ export default defineComponent({
       freezeRow: false,
       topFixedKeys: props.topFixedKeys,
     });
-    provide(tableOptionsInjectKey, tableOptions);
-
-    // const tableStore = TableStore;
-    // const tableStore = reactive(new TableStore({
-    //   data: {
-    //     tableData: props.data,
-    //   },
-    //   propsData: {
-    //     rowKey: props.rowKey,
-    //     tableOptions: tableOptions,
-    //     propTableData: props.data,
-    //   },
-    // }))
-
-    // provide(tableStoreInjectKey, tableStoreRef);
-    // nextTick(() => {
-    //   console.log("====", tableStoreRef);
-    // });
-
     const tableDefaultOptions: InfiniteTableDefaultOptions = {
       defaultEmptySlot: (h) => h("span", "暂无数据"),
     };
@@ -170,7 +148,6 @@ export default defineComponent({
       tableRef,
       tableOptions,
       tableStoreRef,
-      // tableStore,
       tableDefaultOptions,
     };
   },
@@ -201,7 +178,6 @@ export default defineComponent({
     data: {
       handler(newData: RowItemType[]) {
         this.updateData(newData);
-        console.log('============', this.normalData);
       },
       immediate: true,
     },
@@ -228,11 +204,6 @@ export default defineComponent({
   },
 
   created() {
-    // nextTick(() => {
-    //   console.log("====", this.tableStoreRef);
-    //   provide(tableStoreInjectKey, this.tableStoreRef);
-    //   // provide('test', 15);
-    // });
     // this.$on("row-click", (row: RowItemType) => {
     //   this.selectRow(row);
     // });
@@ -548,7 +519,7 @@ export default defineComponent({
         >
           {this.$slots.empty
             ? this.$slots.empty
-            : this.tableDefaultOptions.defaultEmptySlot(this.$createElement)}
+            : this.tableDefaultOptions.defaultEmptySlot(h)}
         </div>
       );
     },
@@ -560,7 +531,6 @@ export default defineComponent({
   },
 
   render() {
-    console.log('table', this.normalData);
     
     return (
       <div

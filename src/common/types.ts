@@ -1,6 +1,6 @@
-import { h, VNode } from 'vue';
-import useTableStore from '@/table-store';
-import TableColumnItem from '@/hooks/useTableColumnItemHooks';
+import { VNode } from 'vue';
+import TableStore from '../table-store.vue';
+import TableColumnItem from '@/store/table-column-item';
 
 export type ColumnFixedType = 'left' | 'right' | false | true;
 
@@ -12,18 +12,18 @@ export interface ColumnRenderProps {
   options: TableColumnItem;
   rowIndex: number;
   row: RowItemType;
-  tableStore: any;
+  tableStore: typeof TableStore;
 }
 
 export interface HeaderRenderProps {
   options: TableColumnItem;
-  tableStore: typeof useTableStore;
+  tableStore: typeof TableStore;
 }
 
 export type ElementExtraAttrs = { style?: any, class?: any, attrs?: any }
 
 export interface InfiniteTableDefaultOptions {
-  defaultEmptySlot: (_h: typeof h) => VNode;
+  defaultEmptySlot: (h) => VNode;
 }
 
 export type RowItemType = string | number | boolean | symbol | object;

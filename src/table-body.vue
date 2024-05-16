@@ -1,20 +1,15 @@
 <script lang="tsx">
-import { defineComponent, ref, inject, reactive, handleError } from "vue";
-import {
-  tableOptionsInjectKey,
-  tableStoreInjectKey,
-  RowItemType,
-  TableOptions,
-} from "./common/types";
+import { defineComponent, ref, inject, reactive, h } from "vue";
+import { RowItemType } from "./common/types";
 import RangeRender from "./render/range-render.vue";
 import TableRow from "./table-row.vue";
 
 export default defineComponent({
   name: "TableBody",
   components: { RangeRender, TableRow },
-  data(this) {
+  data() {
     const tableStore = this.$parent;
-    const tableOptions = inject(tableOptionsInjectKey);
+    const tableOptions = this.$parent.tableOptions;
     const tableBody = ref();
     const scroll = ref();
     const grid = reactive({ offsetX: 0, offsetY: 0 });
@@ -31,7 +26,7 @@ export default defineComponent({
   computed: {
     tableBodyListeners(): Record<string, Function | Function[]> {
       return {
-        ...this.$listeners,
+        ...h,
       };
     },
   },
@@ -129,7 +124,6 @@ export default defineComponent({
   },
   render() {
     const tableStore = this.tableStore;
-    console.log("table-body-----", tableStore);
     return (
       <div
         ref="tableBody"

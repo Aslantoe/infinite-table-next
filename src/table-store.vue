@@ -2,7 +2,7 @@
 import { defineComponent, reactive, ref, PropType, inject } from "vue";
 import { getDataKey } from "./utils/object";
 import TableColumnItem from "./store/table-column-item";
-import { RowKeyType, TableOptions, RowItemType, tableOptionsInjectKey } from "./common/types";
+import { RowItemType } from "./common/types";
 import TableDataStoreMixin from "./store/table-data-store.vue";
 import { doColumnWidthLayout, getTableBodyHeight } from "./table-layout";
 import { getScrollWidth } from "./utils/layout";
@@ -20,7 +20,7 @@ export interface TableLayout {
 }
 export default defineComponent({
   mixins: [TableColumnStoreMixin, TableDataStoreMixin],
-  data(this, vm) {
+  data() {
     const layoutSize = reactive<TableLayout>({
       tableHeight: 0,
       tableWidth: 0,
@@ -28,14 +28,11 @@ export default defineComponent({
       viewportHeight: 0,
       viewportWidth: 0,
     });
-    const tableOptions = inject(tableOptionsInjectKey);
-
     const table = ref();
     
     return {
       layoutSize,
       table,
-      tableOptions
     };
   },
 

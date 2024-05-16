@@ -1,21 +1,8 @@
 <script lang="tsx">
-import {
-  defineComponent,
-  PropType,
-  renderSlot,
-  ref,
-  reactive,
-  inject,
-} from "vue";
+import { defineComponent, ref, reactive, inject, h } from "vue";
 import { getElementOffset, overflowDetection } from "./utils/layout";
-import {
-  tableStoreInjectKey,
-  tableOptionsInjectKey,
-  TableOptions,
-} from "./common/types";
-// import TableStore from "@/table-store";
 import TableColumnItem from "./store/table-column-item";
-import NotifyMixin from "./event-emitter";
+import NotifyMixin from "./event-emitter.vue";
 import TableConfig from "./config";
 
 const HEADER_DRAG_DATA_TYPE: string = "headerColumnIndex".toLowerCase();
@@ -31,10 +18,11 @@ interface ResizeIndicator {
 export default defineComponent({
   name: "TableHeader",
   mixins: [NotifyMixin],
-  data(this) {
+  data() {
     const tableStore = this.$parent;
-    const tableOptions = inject(tableOptionsInjectKey);
+    const tableOptions = this.$parent.tableOptions;
     const mouseEnterIndex = ref<Number>(-1);
+    // 列宽拖动指示器
     const resizeIndicator = reactive<ResizeIndicator>({
       activeIndex: -1,
       startX: 0,
@@ -42,8 +30,6 @@ export default defineComponent({
       visible: false,
       left: -9999,
     });
-    // console.log('======-+++=', test);
-
     return {
       resizeIndicator,
       tableStore,
@@ -53,12 +39,16 @@ export default defineComponent({
   },
 
   computed: {
+    // table.vue 中 ref="scrollElement
     scrollElement(): HTMLElement | undefined {
       return this.$parent.$refs.scrollElement as HTMLElement;
     },
   },
 
   methods: {
+    /**
+     * 设置表头样式
+     */
     getTableCellClass(column: TableColumnItem, columnIndex: number) {
       const { resizeIndicator, mouseEnterIndex } = this;
       const isCurrentIndex =
@@ -72,7 +62,12 @@ export default defineComponent({
         hover: !resizeIndicator.visible && isCurrentIndex,
       };
     },
-
+    /**
+     * 鼠标进入表头
+     * @param evt
+     * @param column
+     * @param columnIndex
+     */
     handleMouseEnter(
       evt: MouseEvent,
       column: TableColumnItem,
@@ -135,6 +130,10 @@ export default defineComponent({
       event.stopPropagation();
       event.stopImmediatePropagation();
     },
+    /**
+     * 列宽设置
+     * @param event
+     */
     handleResizeIndicatorMouseUp(event: MouseEvent) {
       if (this.tableOptions.headerResizable) {
         if (this.resizeIndicator.visible) {
@@ -179,6 +178,11 @@ export default defineComponent({
       return 0;
     },
 
+    /**
+     * 鼠标在表头内移动触发
+     * @param columnIndex
+     * @param event
+     */
     handleMouseMove(columnIndex: number, event: MouseEvent) {
       if (this.tableOptions.headerResizable && !this.resizeIndicator.visible) {
         const { currentTarget, pageX } = event;
@@ -274,14 +278,18 @@ export default defineComponent({
         ) && this.tableStore.sortedOption.order === order
       );
     },
-
+    /**
+     * 列排序
+     * @param column 
+     * @param order 
+     */
     handleColumnSort(
       column: TableColumnItem,
       order?: "asc" | "desc" | "nature"
     ) {
       // 如果column可以排序，并且TableHeader不处于resize模式中，就设置sortOption
       if (column.sortable) {
-        // 排序的逻辑在tableStore中
+        // 排序的逻辑在table-data-store中
         this.tableStore.updateSortedOption({ column, order });
         this.$nextTick(() => {
           this.notify("InfiniteTable", "sort-change", {
@@ -294,7 +302,6 @@ export default defineComponent({
   },
   render() {
     const { allTableColumns, allColumnsWidth } = this.tableStore;
-
     return (
       <div
         class="infinite-table__table-header"
@@ -315,39 +322,39 @@ export default defineComponent({
               ...this.getFixedStyle(column),
             }}
             draggable={this.tableOptions.headerOrderDraggable}
-            {...{
-              on: {
-                mouseenter: (evt: MouseEvent) =>
-                  this.handleMouseEnter(evt, column, columnIndex),
-                mouseleave: (evt: MouseEvent) => this.handleMouseLeave(evt),
-                mousemove: (evt: MouseEvent) =>
-                  this.handleMouseMove(columnIndex, evt),
-                "!mousedown": (evt: MouseEvent) =>
-                  this.handleMouseDown(columnIndex, evt),
-                dragstart: (evt: DragEvent) =>
-                  this.handleHeaderDragStart(columnIndex, evt),
-                dragover: (evt: DragEvent) =>
-                  this.handleHeaderDragOver(columnIndex, evt),
-                dragend: (evt: DragEvent) => this.handleHeaderDragEnd(),
-                drop: (evt: DragEvent) =>
-                  this.handleHeaderDrop(columnIndex, evt),
-                click: (evt: MouseEvent) => {
-                  if (column.sortable) {
-                    this.handleColumnSort(column);
-                  } else {
-                    this.notify(
-                      "InfiniteTable",
-                      "header-column-click",
-                      column,
-                      evt
-                    );
-                  }
-                },
-              },
+            onmouseenter={(evt: MouseEvent) =>
+              this.handleMouseEnter(evt, column, columnIndex)
+            }
+            onmouseleave={(evt: MouseEvent) => this.handleMouseLeave(evt)}
+            onmousemove={(evt: MouseEvent) =>
+              this.handleMouseMove(columnIndex, evt)
+            }
+            onmousedown={(evt: MouseEvent) =>
+              this.handleMouseDown(columnIndex, evt)
+            }
+            ondragstart={(evt: DragEvent) =>
+              this.handleHeaderDragStart(columnIndex, evt)
+            }
+            ondragover={(evt: DragEvent) =>
+              this.handleHeaderDragOver(columnIndex, evt)
+            }
+            ondragend={(evt: DragEvent) => this.handleHeaderDragEnd()}
+            ondrop={(evt: DragEvent) => this.handleHeaderDrop(columnIndex, evt)}
+            onClick={(evt: MouseEvent) => {
+              if (column.sortable) {
+                this.handleColumnSort(column);
+              } else {
+                this.notify(
+                  "InfiniteTable",
+                  "header-column-click",
+                  column,
+                  evt
+                );
+              }
             }}
           >
             <div class="cell-content">
-              {column.headerRender(this.$createElement, {
+              {column.headerRender(h, {
                 options: column,
                 tableStore: this.tableStore,
               })}

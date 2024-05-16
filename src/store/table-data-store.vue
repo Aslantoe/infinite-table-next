@@ -1,8 +1,12 @@
+<!-- 此实例被 mixin 到 table.vue, 可用用this获取 table.vue 属性方法 -->
 <script lang="ts">
-import { defineComponent, ref, reactive, inject } from "vue";
+import { defineComponent, ref, reactive, inject, computed, watch } from "vue";
 import { get, getDataKey, intersection, isEmpty } from "../utils/object";
 import TableColumnItem from "./table-column-item";
-import { RowItemType, RowKeyType, TableOptions, tableOptionsInjectKey } from "../common/types";
+import {
+  RowItemType,
+  RowKeyType,
+} from "../common/types";
 import { isSameColumn } from "./utils";
 
 export function defaultComparator(a: any, b: any): number {
@@ -36,53 +40,91 @@ export interface SortedOption {
 
 export default defineComponent({
   data() {
-    const rowKey = ref<RowKeyType>();
     const table = ref();
-    const tableOptions = inject(tableOptionsInjectKey);
     const fixedKeys = ref<string[]>([]);
-    const tableData = ref<RowItemType[]>([]);
+    const tableData = reactive<RowItemType[]>([]);
     const focusedRow = ref<RowItemType | null>(null);
     const selectedColumn = ref<TableColumnItem | null>(null);
-    const normalData = ref<RowItemType[]>([]);
-    const selectedRows = ref<RowItemType[]>([]);
+    const selectedRows = reactive<RowItemType[]>([]);
     const sortedOption = reactive<SortedOption>({
       column: null,
       order: "nature",
     });
+    
+    const normalData = computed(() => {
+      const set = new Set(fixedKeys.value);
+      const data = this.tableData.filter(
+        (dataItem) => !set.has(getDataKey(dataItem, this.tableOptions.rowKey))
+      );
+      return this.compareDataItem(data);
+    });
+
+    const fixedData = computed(() => {
+      const set = new Set(fixedKeys.value);
+      return this.tableData.filter((dataItem) =>
+        set.has(get(dataItem, this.tableOptions.rowKey))
+      );
+    });
+
+    watch(
+      () => selectedRows,
+      () => {
+        if (table.value) {
+          table.$emit("current-change", this.selectedRows);
+        }
+      }
+    );
+
+    watch(
+      () => tableData,
+      () => {
+        /**
+         * 当数据产生变化时，需要更新selectedRows
+         * 以确保current-change事件抛出数据的正确性
+         * 同时将已经不存在的数据从selectedRows中清除
+         */
+        const selectedRowIdList = this.selectedRows.map((item) =>
+          getDataKey(item, rowKey.value)
+        );
+        const set = new Set(selectedRowIdList);
+        const nextSelectedRows = [];
+        for (let i = 0; i < this.tableData.length; i += 1) {
+          const item = this.tableData[i];
+          if (set.has(getDataKey(item, rowKey.value))) {
+            nextSelectedRows.push(item);
+          }
+        }
+        const commonItem = intersection(selectedRows, nextSelectedRows);
+        if (
+          commonItem.size !== this.selectedRows.length ||
+          commonItem.size !== nextSelectedRows.length
+        ) {
+          selectedRows = nextSelectedRows;
+        }
+        // FIXME: 添加focusRow的修改方法
+      }
+    );
+
     return {
-      rowKey,
+      // rowKey,
       table,
-      tableOptions,
+      // tableOptions,
       fixedKeys,
       tableData,
       focusedRow,
       selectedColumn,
       selectedRows,
       sortedOption,
-      normalData
+      normalData,
+      fixedData,
     };
   },
 
-  computed: {
-    fixedData(): RowItemType[] {
-      const set = new Set(this.fixedKeys);
-      return this.tableData.filter((dataItem) =>
-        set.has(get(dataItem, this.tableOptions.rowKey))
-      );
-    },
-
-    // normalData() {
-    //   const set = new Set(this.fixedKeys);
-    //   const data = this.tableData.filter(
-    //     (dataItem) => !set.has(getDataKey(dataItem, this.tableOptions.rowKey))
-    //   );
-    //   console.log('-----normalData-----', this.compareDataItem(data));
-      
-    //   return this.compareDataItem(data);
-    // },
-  },
-
   methods: {
+    /**
+     * 列排序处理
+     * @param data
+     */
     compareDataItem(data: RowItemType[]) {
       const { column, order } = this.sortedOption;
       if (!order || !column || order === "nature") {
@@ -102,29 +144,26 @@ export default defineComponent({
         return comparator.call(null, value1, value2, row1, row2) * descFlag;
       });
     },
-
+    /**
+     * 更新数据
+     * @param nextData
+     */
     updateData(nextData: RowItemType[]) {
       if (this.tableOptions.freezeRow) {
         this.tableData = nextData.map((item: any) => Object.freeze(item));
       } else {
         this.tableData = nextData;
       }
-      console.log('-----updateData---', this.tableData);
-
-      const set = new Set(this.fixedKeys);
-      const data = this.tableData.filter(
-        (dataItem) => !set.has(getDataKey(dataItem, this.tableOptions.rowKey))
-      );
-      
-      this.normalData = this.compareDataItem(data);
-      
-      console.log('-----normalData-----', this.compareDataItem(data));
+      console.log(111, this.tableData);
     },
 
     updateFixedKeys(keys: string[]) {
       this.fixedKeys = keys;
     },
-
+    /**
+     * 列排序
+     * @param sortedOption
+     */
     updateSortedOption(sortedOption: SortedOption) {
       const { column: prevColumn, order: prevOrder } = this.sortedOption;
       const { column } = sortedOption;
@@ -180,44 +219,6 @@ export default defineComponent({
       return this.selectedRows.findIndex(
         (item) => getDataKey(item, this.rowKey) === rowDateKey
       );
-    },
-  },
-
-  watch: {
-    selectedRows: {
-      handler() {
-        if (this.table) {
-          this.table.$emit("current-change", this.selectedRows);
-        }
-      },
-    },
-    tableData: {
-      handler() {
-        /**
-         * 当数据产生变化时，需要更新selectedRows
-         * 以确保current-change事件抛出数据的正确性
-         * 同时将已经不存在的数据从selectedRows中清除
-         */
-        const selectedRowIdList = this.selectedRows.map((item) =>
-          getDataKey(item, this.rowKey)
-        );
-        const set = new Set(selectedRowIdList);
-        const nextSelectedRows = [];
-        for (let i = 0; i < this.tableData.length; i += 1) {
-          const item = this.tableData[i];
-          if (set.has(getDataKey(item, this.rowKey))) {
-            nextSelectedRows.push(item);
-          }
-        }
-        const commonItem = intersection(this.selectedRows, nextSelectedRows);
-        if (
-          commonItem.size !== this.selectedRows.length ||
-          commonItem.size !== nextSelectedRows.length
-        ) {
-          this.selectedRows = nextSelectedRows;
-        }
-        // FIXME: 添加focusRow的修改方法
-      },
     },
   },
 });

@@ -2,20 +2,16 @@
 import {
   defineComponent,
   ref,
-  inject,
   onMounted,
   onBeforeUnmount,
   nextTick,
 } from "vue";
-
 import { portal } from "./utils/directives";
 import { isEmpty } from "./utils/object";
 import { createPopper } from "@popperjs/core/lib/popper-lite";
-import { tableStoreInjectKey } from "./common/types";
 import arrow from "@popperjs/core/lib/modifiers/arrow";
 import preventOverflow from "@popperjs/core/lib/modifiers/preventOverflow";
 import flip from "@popperjs/core/lib/modifiers/flip";
-// import TableStore from './table-store.vue';
 
 export default defineComponent({
   name: "TooltipRender",
@@ -23,7 +19,6 @@ export default defineComponent({
     portal
   },
   setup() {
-    const tableStore = inject(tableStoreInjectKey);
     const popperRef = ref();
     const tooltipVisible = ref<Boolean>(false);
     const _tooltipVnode = ref();
@@ -31,8 +26,8 @@ export default defineComponent({
     const _tooltip = ref();
 
     onMounted(() => {
-      // tableStore.$on("show-tooltip", handleShowTooltip);
-      // tableStore.$on("hide-tooltip", handleHideTooltip);
+      // this.$on("show-tooltip", handleShowTooltip);
+      // this.$on("hide-tooltip", handleHideTooltip);
     });
 
     onBeforeUnmount(() => {

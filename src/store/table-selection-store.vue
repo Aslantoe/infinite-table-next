@@ -1,3 +1,4 @@
+<!-- 此实例被 mixin 到 table.vue, 可用用this获取 table.vue 属性方法 -->
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import { getDataKey } from "../utils/object";
@@ -5,16 +6,13 @@ import { RowItemType, RowKeyType } from "../common/types";
 import TableColumnItem from "./table-column-item.vue";
 
 export default defineComponent({
-  data(this, vm) {
+  data() {
     const table = ref();
-    const rowKey = ref<RowKeyType>();
     const focusedRow = ref<RowItemType | null>(null);
     const selectedColumn = ref<TableColumnItem | null>(null);
     const selectedRows = ref<RowItemType[]>([]);
-
     return {
       table,
-      rowKey,
       focusedRow,
       selectedColumn,
       selectedRows,

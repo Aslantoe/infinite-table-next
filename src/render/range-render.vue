@@ -7,7 +7,7 @@
       :style="{
         transform: `translate${direction === 'vertical' ? 'Y' : 'X'}(${
           item.position
-        }px)`
+        }px)`,
       }"
     >
       <slot :data="item.data" :index="item.props.index" />
@@ -121,12 +121,6 @@ export default defineComponent({
       activeViewMap,
     };
   },
-
-  mounted () {
-    console.log('range-render', toRaw(this.pool)[0].props);
-    
-  },
-
   computed: {
     poolRaw() {
       return toRaw(this.pool);
@@ -252,7 +246,6 @@ export default defineComponent({
 
       // 清理现有的pool，将没有在展示的viewItem无效化
       for (let i = 0; i < this.pool.length; i += 1) {
-        
         const viewItem = toRaw(this.pool[i]);
         const currentData = this.data[viewItem.props.index];
         /**
@@ -285,7 +278,7 @@ export default defineComponent({
         let viewItem: ViewItem | undefined = this.activeViewMap.get(key);
 
         if (!viewItem) {
-          viewItem = this.cacheViewList.pop();
+          viewItem = toRaw(this.cacheViewList.pop());
           if (viewItem) {
             viewItem.data = item;
             viewItem.props.key = key;

@@ -1,5 +1,6 @@
+<!-- 此实例被 mixin 到 table.vue, 可用用this获取 table.vue 属性方法 -->
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, reactive, ref, nextTick } from "vue";
 import { sumBy } from "../utils/collection";
 import TableColumnItem from "./table-column-item";
 import { RowItemType, TableOptions, ColumnFixedType } from "../common/types";
@@ -7,22 +8,16 @@ import { RowItemType, TableOptions, ColumnFixedType } from "../common/types";
 import { getDataKey } from "../utils/object";
 
 export default defineComponent({
-
-  data(this, vm) {
-      
-    // FIXME: 使用继承来处理rowKey和TableOptions
-    const tableOptions = ref<TableOptions>();
-  
-    const normalData = ref<RowItemType[]>();
-  
-    // layoutSize!: TableLayout;
-  
-    const columnStore = ref<TableColumnItem[]>([]);
+  data() {
+    let normalData = reactive<RowItemType[]>([]);
+    nextTick(() => {
+      normalData = this.normalData;
+    });
+    const columnStore = reactive<TableColumnItem[]>([]);
     return {
       normalData,
       columnStore,
-      tableOptions
-    }
+    };
   },
 
   computed: {

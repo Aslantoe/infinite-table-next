@@ -1,21 +1,9 @@
 <script lang="tsx">
-import {
-  defineComponent,
-  ref,
-  reactive,
-  inject,
-} from "vue";
+import { defineComponent, ref, h, inject, PropType } from "vue";
 import RangeRender from "./render/range-render.vue";
 import NotifyMixin from "./event-emitter.vue";
 import TableColumnItem, { ColumnRender } from "./store/table-column-item";
-import {
-  tableOptionsInjectKey,
-  tableStoreInjectKey,
-  ElementExtraAttrs,
-  RowItemType,
-  TableOptions,
-} from "./common/types";
-// import TableStore from '@/table-store';
+import { ElementExtraAttrs, RowItemType } from "./common/types";
 import { overflowDetection } from "./utils/layout";
 
 function normalizeClass(
@@ -55,10 +43,8 @@ export default defineComponent({
   },
   data() {
     const tableStore = this.$parent?.$parent?.$parent;
-    const tableOptions = inject(tableOptionsInjectKey);
+    const tableOptions = this.$parent?.$parent?.$parent.tableOptions;
     const dragoverColumnItem = ref<TableColumnItem>();
-    console.log('table-row' , this.$parent?.$parent?.$parent);
-    
     return {
       tableStore,
       tableOptions,
@@ -69,7 +55,7 @@ export default defineComponent({
   methods: {
     getExtraRowAttrs(rowItem: RowItemType, index: number): ElementExtraAttrs {
       const { striped, rowExtraAttrs, highlightCurrentRow } = this.tableOptions;
-      const tableStore  = this.tableStore;
+      const tableStore = this.tableStore;
       const extraAttrs =
         typeof rowExtraAttrs === "function"
           ? rowExtraAttrs(rowItem, index)
@@ -111,7 +97,7 @@ export default defineComponent({
           const overflow = overflowDetection(contentElement);
           if (column.tooltipTrigger === "always" || overflow) {
             const vnode = column.tooltipRender ? (
-              column.tooltipRender(this.$createElement, {
+              column.tooltipRender(h, {
                 row: data,
                 options: column,
                 rowIndex: this.index,
@@ -142,6 +128,8 @@ export default defineComponent({
       e: MouseEvent,
       rowIndex: number
     ) {
+      console.log("--------");
+
       this.notify("InfiniteTable", eventName, data, column, e, rowIndex);
     },
 
@@ -153,7 +141,7 @@ export default defineComponent({
       tableStore: any
     ) {
       try {
-        return columnRender.call(this, this.$createElement, {
+        return columnRender.call(this, h, {
           row: data,
           options: columnItem,
           rowIndex: index,
@@ -193,7 +181,10 @@ export default defineComponent({
       };
       return (
         <div
-          class={['infinite-table__cell infinite-table__cell--ellipsis', cellClassNames]}
+          class={[
+            "infinite-table__cell infinite-table__cell--ellipsis",
+            cellClassNames,
+          ]}
           {...{
             attrs: extraAttrs.attrs,
             style: {
@@ -202,48 +193,46 @@ export default defineComponent({
               ...this.getFixedStyle(columnOption),
               ...extraAttrs.style,
             },
-            on: {
-              click: (evt: MouseEvent) => {
-                this.dispatchRowEvent(
-                  "cell-click",
-                  data,
-                  columnOption,
-                  evt,
-                  this.index
-                );
-                this.dispatchRowEvent(
-                  "row-click",
-                  data,
-                  columnOption,
-                  evt,
-                  this.index
-                );
-              },
-              contextmenu: (evt: MouseEvent) => {
-                this.dispatchRowEvent(
-                  "row-contextmenu",
-                  data,
-                  columnOption,
-                  evt,
-                  this.index
-                );
-              },
-              dblclick: (evt: MouseEvent) => {
-                this.dispatchRowEvent(
-                  "row-dblclick",
-                  data,
-                  columnOption,
-                  evt,
-                  this.index
-                );
-              },
-              dragover: (e: DragEvent) => {
-                this.dragoverColumnItem = columnOption;
-              },
-              mouseenter: (evt: MouseEvent) =>
-                this.handleMouseEnterCell(data, columnOption, evt),
-              mouseleave: (evt: MouseEvent) => this.handleMouseLeaveCell(),
+            onclick: (evt: MouseEvent) => {
+              this.dispatchRowEvent(
+                "cell-click",
+                data,
+                columnOption,
+                evt,
+                this.index
+              );
+              this.dispatchRowEvent(
+                "row-click",
+                data,
+                columnOption,
+                evt,
+                this.index
+              );
             },
+            oncontextmenu: (evt: MouseEvent) => {
+              this.dispatchRowEvent(
+                "row-contextmenu",
+                data,
+                columnOption,
+                evt,
+                this.index
+              );
+            },
+            ondblclick: (evt: MouseEvent) => {
+              this.dispatchRowEvent(
+                "row-dblclick",
+                data,
+                columnOption,
+                evt,
+                this.index
+              );
+            },
+            dragover: (e: DragEvent) => {
+              this.dragoverColumnItem = columnOption;
+            },
+            onmouseenter: (evt: MouseEvent) =>
+              this.handleMouseEnterCell(data, columnOption, evt),
+            onmouseleave: (evt: MouseEvent) => this.handleMouseLeaveCell(),
           }}
         >
           <div class="cell-content">
@@ -274,7 +263,7 @@ export default defineComponent({
     const extraAttrs = this.getExtraRowAttrs(this.data, this.index);
     return (
       <div
-        class={['infinite-table__row', extraAttrs.class]}
+        class={["infinite-table__row", extraAttrs.class]}
         draggable={tableOptions.rowDraggable}
         {...{
           style: {
