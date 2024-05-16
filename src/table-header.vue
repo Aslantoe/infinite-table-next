@@ -1,9 +1,10 @@
 <script lang="tsx">
-import { defineComponent, ref, reactive, inject, h } from "vue";
+import { defineComponent, ref, reactive, h } from "vue";
 import { getElementOffset, overflowDetection } from "./utils/layout";
 import TableColumnItem from "./store/table-column-item";
 import NotifyMixin from "./event-emitter.vue";
 import TableConfig from "./config";
+import { eventBus } from "./eventBus";
 
 const HEADER_DRAG_DATA_TYPE: string = "headerColumnIndex".toLowerCase();
 
@@ -82,10 +83,12 @@ export default defineComponent({
         if (contentElement) {
           const overflow = overflowDetection(contentElement);
           if (overflow) {
-            this.tableStore.$emit(
+            eventBus.emit(
               "show-tooltip",
-              currentTarget,
-              <span>{column.label}</span>
+              {
+                element: currentTarget,
+                textVNode: <span>{column.label}</span>
+              }
             );
           }
         }
@@ -94,7 +97,7 @@ export default defineComponent({
 
     handleMouseLeave(evt: MouseEvent) {
       this.mouseEnterIndex = -1;
-      this.tableStore.$emit("hide-tooltip");
+      eventBus.emit("hide-tooltip");
     },
 
     /**

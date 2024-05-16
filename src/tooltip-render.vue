@@ -12,11 +12,11 @@ import { createPopper } from "@popperjs/core/lib/popper-lite";
 import arrow from "@popperjs/core/lib/modifiers/arrow";
 import preventOverflow from "@popperjs/core/lib/modifiers/preventOverflow";
 import flip from "@popperjs/core/lib/modifiers/flip";
-
+import { eventBus } from "./eventBus";
 export default defineComponent({
   name: "TooltipRender",
   directives: {
-    portal
+    portal,
   },
   setup() {
     const popperRef = ref();
@@ -26,8 +26,14 @@ export default defineComponent({
     const _tooltip = ref();
 
     onMounted(() => {
-      // this.$on("show-tooltip", handleShowTooltip);
-      // this.$on("hide-tooltip", handleHideTooltip);
+      eventBus.on("hide-tooltip", () => {
+        handleHideTooltip();
+      });
+      eventBus.on("show-tooltip", (data) => {
+        console.log(11111, data);
+        const { element, textVNode, wrapperClass } = data;
+        handleShowTooltip(element, textVNode, wrapperClass );
+      });
     });
 
     onBeforeUnmount(() => {
@@ -68,7 +74,7 @@ export default defineComponent({
         <div
           v-portal
           ref="popper"
-          class={['infinite-table__tooltip', _tooltipWrapperClass.value]}
+          class={["infinite-table__tooltip", _tooltipWrapperClass.value]}
           role="tooltip"
         >
           {_tooltipVnode.value}
