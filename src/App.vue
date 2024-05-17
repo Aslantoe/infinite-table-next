@@ -4,17 +4,25 @@
       row-key="id"
       :height="500"
       :data="tableData"
-      :striped="true"
-      :header-order-draggable="true"
-      :headerResizeable="true"
       :table-columns="columns"
+      :row-extra-attrs="rowExtraClass"
+      :striped="true"
+      header-height="48px"
+      row-height="45px"
+      header-resizeable
+      header-order-draggable
+      highlight-current-cell
+      highlight-current-row
+      multiple-selection
       @column-resize="handleColumnResize"
       @header-drop="handleHeaderDrop"
+      @row-dblclick="handlerRowDblclick"
+      @current-change="handleCurrentChange"
     />
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { reactive, ref } from "vue";
 import InfiniteTableNext from "./table.vue";
 
@@ -65,6 +73,23 @@ const tableData = ref([
   },
 ]);
 
+const rowExtraClass = (rowItem, rowIndex) => {
+  const timestamp = new Date("2016-05-02").valueOf();
+  if (new Date(rowItem.date).valueOf() < timestamp) {
+    return {
+      style: {
+        background: "pink",
+      },
+    };
+  }
+  return {};
+};
+
+const handleCurrentChange = (row) => {
+  console.log('当前行', row);
+  
+};
+
 /**
  * 列宽拖动
  */
@@ -89,6 +114,10 @@ const handleHeaderDrop = (_dragIndex, dragColumn, _dropIndex, dropColumn) => {
   columns.splice(dropIndex, 0, columns.splice(dragIndex, 1)[0]);
 };
 
+const handlerRowDblclick = (row, line) => {
+  console.log("双击当前行", row, line);
+};
+
 const columns = reactive([
   {
     label: "id",
@@ -101,6 +130,9 @@ const columns = reactive([
     prop: "date",
     fixed: "left",
     width: 100,
+    columnRender: (h, { row }) => {
+      return <div style="color: yellow">{row.date}</div>;
+    },
   },
   {
     label: "姓名",
@@ -137,7 +169,7 @@ const columns = reactive([
   {
     label: "Tag",
     prop: "tag",
-    fixed: 'right'
+    fixed: "right",
   },
 ]);
 </script>

@@ -14,7 +14,7 @@
   pointer-events: none;
   z-index: 1999;
   position: absolute;
-  color: white;
+  color: #fff;
   background: $table-tooltip-background;
   min-width: 150px;
   max-width: 400px;
@@ -138,8 +138,11 @@
     }
 
     &:hover {
-      border-right: 1px solid white;
+      border-right: 1px solid #fff;
     }
+  }
+  .infinite-table__cell.hover {
+    border-right: 1px solid #fff;
   }
 }
 

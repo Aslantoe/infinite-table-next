@@ -7,7 +7,6 @@ import { ElementExtraAttrs, RowItemType } from "./common/types";
 import { overflowDetection } from "./utils/layout";
 import { eventBus } from "./eventBus";
 
-
 function normalizeClass(
   classObj: string | { [key: string]: boolean } | string[]
 ): { [key: string]: boolean } {
@@ -87,9 +86,9 @@ export default defineComponent({
 
     /**
      * 鼠标进入表格单元
-     * @param data 
-     * @param column 
-     * @param event 
+     * @param data
+     * @param column
+     * @param event
      */
     handleMouseEnterCell(
       data: any,
@@ -116,14 +115,11 @@ export default defineComponent({
             ) : (
               <span>{contentElement?.textContent}</span>
             );
-            eventBus.emit(
-              "show-tooltip",
-              {
-                element: currentTarget,
-                textVNode: vnode,
-                wrapperClass: column.tooltipWrapperClass(data)
-              }
-            );
+            eventBus.emit("show-tooltip", {
+              element: currentTarget,
+              textVNode: vnode,
+              wrapperClass: column.tooltipWrapperClass(data),
+            });
           }
         }
       }
@@ -132,7 +128,14 @@ export default defineComponent({
     getFixedStyle(column: TableColumnItem) {
       return this.tableStore.getFixedColumnStyle(column);
     },
-
+    /**
+     * 事件派发
+     * @param eventName 
+     * @param data 
+     * @param column 
+     * @param e 
+     * @param rowIndex 
+     */
     dispatchRowEvent(
       eventName: string,
       data: any,
@@ -140,6 +143,7 @@ export default defineComponent({
       e: MouseEvent,
       rowIndex: number
     ) {
+      eventBus.emit(eventName, {data, column, e, rowIndex});
       this.notify("InfiniteTable", eventName, data, column, e, rowIndex);
     },
 
@@ -165,7 +169,9 @@ export default defineComponent({
         return null;
       }
     },
-
+    /**
+     * 单元格视图
+     */
     renderTableCell(props: { data: TableColumnItem }) {
       const { data, tableStore, index } = this;
       const { focusedRow, selectedColumn } = tableStore;
@@ -195,55 +201,54 @@ export default defineComponent({
             "infinite-table__cell infinite-table__cell--ellipsis",
             cellClassNames,
           ]}
-          {...{
-            attrs: extraAttrs.attrs,
-            style: {
-              width: `${columnOption.width}px`,
-              height: `${rowHeight}px`,
-              ...this.getFixedStyle(columnOption),
-              ...extraAttrs.style,
-            },
-            onclick: (evt: MouseEvent) => {
-              this.dispatchRowEvent(
-                "cell-click",
-                data,
-                columnOption,
-                evt,
-                this.index
-              );
-              this.dispatchRowEvent(
-                "row-click",
-                data,
-                columnOption,
-                evt,
-                this.index
-              );
-            },
-            oncontextmenu: (evt: MouseEvent) => {
-              this.dispatchRowEvent(
-                "row-contextmenu",
-                data,
-                columnOption,
-                evt,
-                this.index
-              );
-            },
-            ondblclick: (evt: MouseEvent) => {
-              this.dispatchRowEvent(
-                "row-dblclick",
-                data,
-                columnOption,
-                evt,
-                this.index
-              );
-            },
-            dragover: (e: DragEvent) => {
-              this.dragoverColumnItem = columnOption;
-            },
-            onmouseenter: (evt: MouseEvent) =>
-              this.handleMouseEnterCell(data, columnOption, evt),
-            onmouseleave: (evt: MouseEvent) => this.handleMouseLeaveCell(),
+          style={{
+            width: `${columnOption.width}px`,
+            height: `${rowHeight}px`,
+            ...this.getFixedStyle(columnOption),
+            ...extraAttrs.style,
           }}
+          attrs={{ ...extraAttrs.attrs }}
+          onclick={(evt: MouseEvent) => {
+            this.dispatchRowEvent(
+              "cell-click",
+              data,
+              columnOption,
+              evt,
+              this.index
+            );
+            this.dispatchRowEvent(
+              "row-click",
+              data,
+              columnOption,
+              evt,
+              this.index
+            );
+          }}
+          oncontextmenu={(evt: MouseEvent) => {
+            this.dispatchRowEvent(
+              "row-contextmenu",
+              data,
+              columnOption,
+              evt,
+              this.index
+            );
+          }}
+          ondblclick={(evt: MouseEvent) => {
+            this.dispatchRowEvent(
+              "row-dblclick",
+              data,
+              columnOption,
+              evt,
+              this.index
+            );
+          }}
+          ondragover={(e: DragEvent) => {
+            this.dragoverColumnItem = columnOption;
+          }}
+          onmouseenter={(evt: MouseEvent) =>
+            this.handleMouseEnterCell(data, columnOption, evt)
+          }
+          onmouseleave={(evt: MouseEvent) => this.handleMouseLeaveCell()}
         >
           <div class="cell-content">
             {this.renderColumnCell(
@@ -275,57 +280,53 @@ export default defineComponent({
       <div
         class={["infinite-table__row", extraAttrs.class]}
         draggable={tableOptions.rowDraggable}
-        {...{
-          style: {
-            ...extraAttrs.style,
-            width: `${this.tableStore.allColumnsWidth}px`,
-            height: `${tableOptions.rowHeight}px`,
-          },
-          attrs: extraAttrs.attrs,
-          on: {
-            dragstart: (evt: DragEvent) => {
-              // 避免table-body再次触发相同类型的事件（例如dnd相关的事件)
-              evt.stopPropagation();
-              this.dispatchRowEvent(
-                "row-dragstart",
-                this.data,
-                this.dragoverColumnItem as any,
-                evt,
-                this.index
-              );
-            },
-            dragend: (evt: DragEvent) => {
-              evt.stopPropagation();
-              this.dispatchRowEvent(
-                "row-dragend",
-                this.data,
-                this.dragoverColumnItem as any,
-                evt,
-                this.index
-              );
-            },
-            dragover: (evt: DragEvent) => {
-              evt.stopPropagation();
-              this.dispatchRowEvent(
-                "row-dragover",
-                this.data,
-                this.dragoverColumnItem as any,
-                evt,
-                this.index
-              );
-            },
-            drop: (evt: DragEvent) => {
-              evt.stopPropagation();
-              this.dispatchRowEvent(
-                "row-drop",
-                this.data,
-                this.dragoverColumnItem as any,
-                evt,
-                this.index
-              );
-            },
-          },
+        style={{
+          ...extraAttrs.style,
+          width: `${this.tableStore.allColumnsWidth}px`,
+          height: `${tableOptions.rowHeight}px`,
         }}
+        ondragstart={(evt: DragEvent) => {
+          // 避免table-body再次触发相同类型的事件（例如dnd相关的事件)
+          evt.stopPropagation();
+          this.dispatchRowEvent(
+            "row-dragstart",
+            this.data,
+            this.dragoverColumnItem as any,
+            evt,
+            this.index
+          );
+        }}
+        ondragend={(evt: DragEvent) => {
+          evt.stopPropagation();
+          this.dispatchRowEvent(
+            "row-dragend",
+            this.data,
+            this.dragoverColumnItem as any,
+            evt,
+            this.index
+          );
+        }}
+        ondragover={(evt: DragEvent) => {
+          evt.stopPropagation();
+          this.dispatchRowEvent(
+            "row-dragover",
+            this.data,
+            this.dragoverColumnItem as any,
+            evt,
+            this.index
+          );
+        }}
+        ondrop={(evt: DragEvent) => {
+          evt.stopPropagation();
+          this.dispatchRowEvent(
+            "row-drop",
+            this.data,
+            this.dragoverColumnItem as any,
+            evt,
+            this.index
+          );
+        }}
+        {...extraAttrs.attrs}
       >
         {leftFixedColumns.map((column) =>
           this.renderTableCell({ data: column })

@@ -1,12 +1,6 @@
 <script lang="tsx">
 import ResizeObserver from "resize-observer-polyfill";
-import {
-  PropType,
-  defineComponent,
-  ref,
-  h,
-  reactive,
-} from "vue";
+import { PropType, defineComponent, ref, h, reactive } from "vue";
 import TableColumnItem, { TableColumnOptions } from "./store/table-column-item";
 import { getDataKey } from "./utils/object";
 import {
@@ -20,6 +14,7 @@ import TableBody from "./table-body.vue";
 import TableStore from "./table-store.vue";
 import TooltipRender from "./tooltip-render.vue";
 import { num2px, getClientSize, px2num } from "./utils/layout";
+import { eventBus } from "./eventBus";
 import "./styles/main.scss";
 
 interface KeyboardEventDispatcher {
@@ -118,8 +113,7 @@ export default defineComponent({
       control: false,
     });
     const scrollElement = ref<HTMLElement>();
-    const tableRef = ref(null);
-    // const tableStore = ref(null)
+    const tableRef = ref();
     const tableStoreRef = ref(null);
 
     const tableOptions = reactive<TableOptions>({
@@ -204,24 +198,28 @@ export default defineComponent({
   },
 
   created() {
-    // this.$on("row-click", (row: RowItemType) => {
-    //   this.selectRow(row);
-    // });
-    // this.$on("row-contextmenu", (row: RowItemType) => {
-    //   // 如果当前行已经被选中，那么不再触发current-change事件
-    //   // 用于多选时可以在选中的行上使用右键菜单
-    //   if (!this.isRowSelected(row)) {
-    //     this.selectRow(row);
-    //   }
-    // });
-    // this.$on("cell-click", (row: RowItemType, column: TableColumnItem) => {
-    //   this.selectedColumn = column;
-    // });
     // // FIXME: 修复无法正常传递table对象的问题
-    // this.table = this;
+    this.table = this;
   },
 
   mounted() {
+    // 点击当前行
+    eventBus.on("row-click", (val: any) => {
+      this.selectRow(val.data);
+    });
+    // 点击当前单元格
+    eventBus.on("cell-click", (val: any) => {
+      this.selectedColumn = val.column;
+    });
+    // 右键
+    eventBus.on("row-contextmenu", (val: any) => {
+      // 如果当前行已经被选中，那么不再触发current-change事件
+      // 用于多选时可以在选中的行上使用右键菜单
+      if (!this.isRowSelected(val.data)) {
+        this.selectRow(val.data);
+      }
+    });
+    // resizeObserver
     this.resizeObserver = new ResizeObserver((observerEntries) => {
       if (observerEntries && observerEntries.length > 0) {
         const entry = observerEntries[0];
@@ -246,12 +244,18 @@ export default defineComponent({
         tableHeight: height,
       });
     },
-
+    /**
+     * 选择行
+     * @param row
+     */
     selectRow(row: RowItemType) {
       const multiple =
         this.composeKey.control && this.tableOptions.multipleSelection;
       const continuous =
         this.composeKey.shift && this.tableOptions.multipleSelection;
+
+      console.log('=========', multiple, continuous, this.tableOptions.multipleSelection);
+        
       if (!multiple) {
         this.clearSelectedRows();
       }
@@ -299,20 +303,19 @@ export default defineComponent({
     //   leading: false, trailing: true, wait: 600, maxWait: 100000,
     // })
     cleanupComposeKey() {
-      this.$set(this.composeKey, "shift", false);
-      this.$set(this.composeKey, "control", false);
+      this.composeKey.shift = false;
+      this.composeKey.control = false;
     },
 
     handleComposeKeyEvent(event: KeyboardEvent, keyStatus: KeyStatus) {
+      
       if (keyStatus === KeyStatus.DOWN) {
-        this.$set(
-          this.composeKey,
-          event.key.toLowerCase(),
-          keyStatus === KeyStatus.DOWN
-        );
-        this.cleanupComposeKey();
+        this.composeKey[event.key.toLowerCase()] = (keyStatus === KeyStatus.DOWN);
+        setTimeout(() => {
+          this.cleanupComposeKey();
+        }, 1000);
       } else {
-        this.$set(this.composeKey, event.key.toLowerCase(), false);
+        this.composeKey[event.key.toLowerCase()] = false;
       }
     },
 
@@ -326,8 +329,15 @@ export default defineComponent({
       );
     },
 
+    /**
+     * 处理键盘事件
+     * @param event 
+     * @param keyStatus 
+     */
     handleKeyEvent(event: KeyboardEvent, keyStatus: KeyStatus) {
       const { key } = event;
+      // console.log('handleKeyEvent');
+      
       const eventDispatcher: KeyboardEventDispatcher[] = [
         {
           rule: /^Arrow(Down|Up|Left|Right)/i,
@@ -343,6 +353,8 @@ export default defineComponent({
             (e) => {
               if (this.composeKey.control) {
                 e.preventDefault();
+                console.log('selectAll');
+                
                 this.selectAll();
               }
             },
@@ -531,22 +543,17 @@ export default defineComponent({
   },
 
   render() {
-    
     return (
       <div
         ref="tableRef"
         class="infinite-table"
         style={{ height: this.tableHeight }}
         tabindex="0"
-        {...{
-          on: {
-            keydown: (evt: KeyboardEvent) =>
-              this.handleKeyEvent(evt, KeyStatus.DOWN),
-            keyup: (evt: KeyboardEvent) =>
-              this.handleKeyEvent(evt, KeyStatus.UP),
-            "!click": () => this.focus(),
-          },
-        }}
+        onkeydown={(evt: KeyboardEvent) =>
+          this.handleKeyEvent(evt, KeyStatus.DOWN)
+        }
+        onkeyup={(evt: KeyboardEvent) => this.handleKeyEvent(evt, KeyStatus.UP)}
+        onclick={() => this.focus()}
       >
         <div ref="scrollElement" class="infinite-table--scrollable">
           <table-header class={this.tableHeaderClass} />

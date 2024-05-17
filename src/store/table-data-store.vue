@@ -1,12 +1,9 @@
 <!-- 此实例被 mixin 到 table.vue, 可用用this获取 table.vue 属性方法 -->
 <script lang="ts">
-import { defineComponent, ref, reactive, inject, computed, watch } from "vue";
+import { defineComponent, ref, reactive, inject, computed } from "vue";
 import { get, getDataKey, intersection, isEmpty } from "../utils/object";
 import TableColumnItem from "./table-column-item";
-import {
-  RowItemType,
-  RowKeyType,
-} from "../common/types";
+import { RowItemType, RowKeyType } from "../common/types";
 import { isSameColumn } from "./utils";
 
 export function defaultComparator(a: any, b: any): number {
@@ -40,7 +37,7 @@ export interface SortedOption {
 
 export default defineComponent({
   data() {
-    const table = ref();
+    let table;
     const fixedKeys = ref<string[]>([]);
     const tableData = reactive<RowItemType[]>([]);
     const focusedRow = ref<RowItemType | null>(null);
@@ -50,7 +47,7 @@ export default defineComponent({
       column: null,
       order: "nature",
     });
-    
+
     const normalData = computed(() => {
       const set = new Set(fixedKeys.value);
       const data = this.tableData.filter(
@@ -66,49 +63,8 @@ export default defineComponent({
       );
     });
 
-    watch(
-      () => selectedRows,
-      () => {
-        if (table.value) {
-          table.$emit("current-change", this.selectedRows);
-        }
-      }
-    );
-
-    watch(
-      () => tableData,
-      () => {
-        /**
-         * 当数据产生变化时，需要更新selectedRows
-         * 以确保current-change事件抛出数据的正确性
-         * 同时将已经不存在的数据从selectedRows中清除
-         */
-        const selectedRowIdList = this.selectedRows.map((item) =>
-          getDataKey(item, rowKey.value)
-        );
-        const set = new Set(selectedRowIdList);
-        const nextSelectedRows = [];
-        for (let i = 0; i < this.tableData.length; i += 1) {
-          const item = this.tableData[i];
-          if (set.has(getDataKey(item, rowKey.value))) {
-            nextSelectedRows.push(item);
-          }
-        }
-        const commonItem = intersection(selectedRows, nextSelectedRows);
-        if (
-          commonItem.size !== this.selectedRows.length ||
-          commonItem.size !== nextSelectedRows.length
-        ) {
-          selectedRows = nextSelectedRows;
-        }
-        // FIXME: 添加focusRow的修改方法
-      }
-    );
-
     return {
-      // rowKey,
       table,
-      // tableOptions,
       fixedKeys,
       tableData,
       focusedRow,
@@ -118,6 +74,47 @@ export default defineComponent({
       normalData,
       fixedData,
     };
+  },
+
+  watch: {
+    tableData: {
+      handler() {
+        /**
+         * 当数据产生变化时，需要更新selectedRows
+         * 以确保current-change事件抛出数据的正确性
+         * 同时将已经不存在的数据从selectedRows中清除
+         */
+        const selectedRowIdList = this.selectedRows.map((item) =>
+          getDataKey(item, this.rowKey)
+        );
+        const set = new Set(selectedRowIdList);
+        const nextSelectedRows = [];
+        for (let i = 0; i < this.tableData.length; i += 1) {
+          const item = this.tableData[i];
+          if (set.has(getDataKey(item, this.rowKey))) {
+            nextSelectedRows.push(item);
+          }
+        }
+        const commonItem = intersection(this.selectedRows, nextSelectedRows);
+        if (
+          commonItem.size !== this.selectedRows.length ||
+          commonItem.size !== nextSelectedRows.length
+        ) {
+          this.selectedRows = nextSelectedRows;
+        }
+        // FIXME: 添加focusRow的修改方法
+      },
+      deep: true,
+    },
+
+    selectedRows: {
+      handler() {
+        if (this.table) {
+          this.table.$emit("current-change", this.selectedRows);
+        }
+      },
+      deep: true,
+    },
   },
 
   methods: {
@@ -154,7 +151,6 @@ export default defineComponent({
       } else {
         this.tableData = nextData;
       }
-      console.log(111, this.tableData);
     },
 
     updateFixedKeys(keys: string[]) {
