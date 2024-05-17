@@ -1,10 +1,12 @@
 <script lang="tsx">
-import { defineComponent, ref, h, inject, PropType } from "vue";
+import { defineComponent, ref, h, PropType } from "vue";
 import RangeRender from "./render/range-render.vue";
 import NotifyMixin from "./event-emitter.vue";
 import TableColumnItem, { ColumnRender } from "./store/table-column-item";
 import { ElementExtraAttrs, RowItemType } from "./common/types";
 import { overflowDetection } from "./utils/layout";
+import { eventBus } from "./eventBus";
+
 
 function normalizeClass(
   classObj: string | { [key: string]: boolean } | string[]
@@ -76,11 +78,19 @@ export default defineComponent({
         },
       };
     },
-
+    /**
+     * 鼠标离开单元格
+     */
     handleMouseLeaveCell() {
-      this.tableStore.$emit("hide-tooltip");
+      eventBus.emit("hide-tooltip");
     },
 
+    /**
+     * 鼠标进入表格单元
+     * @param data 
+     * @param column 
+     * @param event 
+     */
     handleMouseEnterCell(
       data: any,
       column: TableColumnItem,
@@ -106,11 +116,13 @@ export default defineComponent({
             ) : (
               <span>{contentElement?.textContent}</span>
             );
-            this.tableStore.$emit(
+            eventBus.emit(
               "show-tooltip",
-              currentTarget,
-              vnode,
-              column.tooltipWrapperClass(data)
+              {
+                element: currentTarget,
+                textVNode: vnode,
+                wrapperClass: column.tooltipWrapperClass(data)
+              }
             );
           }
         }
@@ -128,8 +140,6 @@ export default defineComponent({
       e: MouseEvent,
       rowIndex: number
     ) {
-      console.log("--------");
-
       this.notify("InfiniteTable", eventName, data, column, e, rowIndex);
     },
 

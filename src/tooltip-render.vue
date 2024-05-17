@@ -13,6 +13,7 @@ import arrow from "@popperjs/core/lib/modifiers/arrow";
 import preventOverflow from "@popperjs/core/lib/modifiers/preventOverflow";
 import flip from "@popperjs/core/lib/modifiers/flip";
 import { eventBus } from "./eventBus";
+
 export default defineComponent({
   name: "TooltipRender",
   directives: {
@@ -23,16 +24,15 @@ export default defineComponent({
     const tooltipVisible = ref<Boolean>(false);
     const _tooltipVnode = ref();
     const _tooltipWrapperClass = ref();
-    const _tooltip = ref();
+    let _tooltip: ReturnType<typeof createPopper>;
 
     onMounted(() => {
       eventBus.on("hide-tooltip", () => {
         handleHideTooltip();
       });
       eventBus.on("show-tooltip", (data) => {
-        console.log(11111, data);
         const { element, textVNode, wrapperClass } = data;
-        handleShowTooltip(element, textVNode, wrapperClass );
+        handleShowTooltip(element, textVNode, wrapperClass);
       });
     });
 
@@ -40,6 +40,12 @@ export default defineComponent({
       handleHideTooltip();
     });
 
+    /**
+     * 显示 tooltip
+     * @param element
+     * @param textVNode
+     * @param wrapperClass
+     */
     const handleShowTooltip = (
       element: HTMLElement,
       textVNode,
@@ -52,7 +58,7 @@ export default defineComponent({
           _tooltipWrapperClass.value = wrapperClass;
           tooltipVisible.value = true;
           nextTick(() => {
-            _tooltip.value = createPopper(element, popperRef.value, {
+            _tooltip = createPopper(element, popperRef.value, {
               placement: "top",
               modifiers: [arrow, preventOverflow, flip],
             });
@@ -60,12 +66,14 @@ export default defineComponent({
         }
       }
     };
-
+    /**
+     * 隐藏 tooltip
+     */
     const handleHideTooltip = () => {
       tooltipVisible.value = false;
       if (_tooltip) {
-        // _tooltip.value.destroy();
-        _tooltip.value = undefined;
+        _tooltip.destroy();
+        _tooltip = undefined;
       }
     };
 
@@ -73,7 +81,7 @@ export default defineComponent({
       tooltipVisible.value && (
         <div
           v-portal
-          ref="popper"
+          ref={popperRef}
           class={["infinite-table__tooltip", _tooltipWrapperClass.value]}
           role="tooltip"
         >
