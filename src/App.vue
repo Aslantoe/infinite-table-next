@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="width: 100%;">
     <button @click="addColumn">添加一列</button>
     <button @click="removeColumn">减少一列</button>
     <InfiniteTableNext
@@ -132,6 +132,7 @@ const handlerRowDblclick = (row, line) => {
 };
 
 let columns = ref([
+  { type: 'selection', key: 'selection', fixed: 'left' },
   {
     label: "id",
     prop: "id",
