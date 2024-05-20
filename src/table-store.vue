@@ -9,7 +9,6 @@ import { getScrollWidth } from "./utils/layout";
 import { isSameColumn } from "./store/utils";
 import { sumBy } from "./utils/collection";
 import TableColumnStoreMixin from "./store/table-column-store.vue";
-// import { debounce } from "lodash-es";
 
 export interface TableLayout {
   tableHeight: number;
@@ -43,7 +42,6 @@ export default defineComponent({
      * 此方法会更新表格的layout数据
      * @param layoutSize
      */
-    // @DebounceDecorator({ wait: 500, leading: true, trailing: true })
     updateLayoutSize(layoutSize: {
       tableHeight: number;
       tableWidth: number;

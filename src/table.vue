@@ -16,6 +16,7 @@ import TooltipRender from "./tooltip-render.vue";
 import { num2px, getClientSize, px2num } from "./utils/layout";
 import { eventBus } from "./eventBus";
 import "./styles/main.scss";
+import { debounce } from "lodash-es";
 
 interface KeyboardEventDispatcher {
   rule: RegExp;
@@ -107,7 +108,7 @@ export default defineComponent({
   },
 
   setup(props) {
-    const resizeObserver = ref<ResizeObserver>();
+    let resizeObserver;
     const composeKey = reactive({
       shift: false,
       control: false,
@@ -198,10 +199,9 @@ export default defineComponent({
   },
 
   created() {
-    // // FIXME: 修复无法正常传递table对象的问题
+    // FIXME: 修复无法正常传递table对象的问题
     this.table = this;
   },
-
   mounted() {
     // 点击当前行
     eventBus.on("row-click", (val: any) => {
@@ -224,7 +224,7 @@ export default defineComponent({
       if (observerEntries && observerEntries.length > 0) {
         const entry = observerEntries[0];
         const { width, height } = entry.contentRect;
-        this._doLayout(width, height);
+        this.doLayoutDebounced(width, height);
       }
     });
     this.resizeObserver.observe(this.tableRef);
@@ -233,9 +233,17 @@ export default defineComponent({
   },
 
   methods: {
-    // @DebounceDecorator({
-    //   leading: false, trailing: true, wait: 200, maxWait: 2000,
-    // })
+    doLayoutDebounced: debounce(
+      function (width, height) {
+        this._doLayout(width, height);
+      },
+      200,
+      {
+        leading: false,
+        trailing: true,
+        maxWait: 2000,
+      }
+    ),
     _doLayout(width: number, height: number) {
       this.updateLayoutSize({
         ...this.layoutSize,
@@ -253,9 +261,6 @@ export default defineComponent({
         this.composeKey.control && this.tableOptions.multipleSelection;
       const continuous =
         this.composeKey.shift && this.tableOptions.multipleSelection;
-
-      console.log('=========', multiple, continuous, this.tableOptions.multipleSelection);
-        
       if (!multiple) {
         this.clearSelectedRows();
       }
@@ -298,22 +303,27 @@ export default defineComponent({
         }
       }
     },
-
-    // @DebounceDecorator({
-    //   leading: false, trailing: true, wait: 600, maxWait: 100000,
-    // })
     cleanupComposeKey() {
       this.composeKey.shift = false;
       this.composeKey.control = false;
     },
 
+    cleanupComposeKeyDebounced: debounce(
+      function (this) {
+        this.cleanupComposeKey();
+      },
+      600,
+      {
+        leading: false,
+        trailing: true,
+        maxWait: 100000,
+      }
+    ),
+
     handleComposeKeyEvent(event: KeyboardEvent, keyStatus: KeyStatus) {
-      
       if (keyStatus === KeyStatus.DOWN) {
-        this.composeKey[event.key.toLowerCase()] = (keyStatus === KeyStatus.DOWN);
-        setTimeout(() => {
-          this.cleanupComposeKey();
-        }, 1000);
+        this.composeKey[event.key.toLowerCase()] = keyStatus === KeyStatus.DOWN;
+        this.cleanupComposeKeyDebounced();
       } else {
         this.composeKey[event.key.toLowerCase()] = false;
       }
@@ -331,13 +341,11 @@ export default defineComponent({
 
     /**
      * 处理键盘事件
-     * @param event 
-     * @param keyStatus 
+     * @param event
+     * @param keyStatus
      */
     handleKeyEvent(event: KeyboardEvent, keyStatus: KeyStatus) {
       const { key } = event;
-      // console.log('handleKeyEvent');
-      
       const eventDispatcher: KeyboardEventDispatcher[] = [
         {
           rule: /^Arrow(Down|Up|Left|Right)/i,
@@ -353,8 +361,6 @@ export default defineComponent({
             (e) => {
               if (this.composeKey.control) {
                 e.preventDefault();
-                console.log('selectAll');
-                
                 this.selectAll();
               }
             },

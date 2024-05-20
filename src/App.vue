@@ -1,5 +1,7 @@
 <template>
-  <div style="width: 800px">
+  <div>
+    <button @click="addColumn">添加一列</button>
+    <button @click="removeColumn">减少一列</button>
     <InfiniteTableNext
       row-key="id"
       :height="500"
@@ -23,8 +25,21 @@
 </template>
 
 <script setup lang="tsx">
-import { reactive, ref } from "vue";
+import { ref } from "vue";
 import InfiniteTableNext from "./table.vue";
+
+const addColumn = () => {
+ columns.value.push({
+    label: "地址",
+    width: 80,
+    prop: "address",
+    sortable: true,
+  });
+};
+
+const removeColumn = () => {
+  columns.value = columns.value.slice(0,columns.value.length - 1);
+};
 
 const tableData = ref([
   {
@@ -86,15 +101,13 @@ const rowExtraClass = (rowItem, rowIndex) => {
 };
 
 const handleCurrentChange = (row) => {
-  console.log('当前行', row);
-  
+  console.log("当前行", row);
 };
 
 /**
  * 列宽拖动
  */
 const handleColumnResize = (columnIndex, column, size) => {
-  // console.log('handleColumnResize', columnIndex, column, size);
   columns[columnIndex].width += size;
 };
 
@@ -106,19 +119,19 @@ const handleHeaderDrop = (_dragIndex, dragColumn, _dropIndex, dropColumn) => {
     return;
   }
 
-  const dragIndex = columns.findIndex((i) => i.label === dragColumn.label);
-  const dropIndex = columns.findIndex((i) => i.label === dropColumn.label);
+  const dragIndex =columns.value.findIndex((i) => i.label === dragColumn.label);
+  const dropIndex =columns.value.findIndex((i) => i.label === dropColumn.label);
   if (dragIndex === -1 || dropIndex === -1) {
     return;
   }
-  columns.splice(dropIndex, 0, columns.splice(dragIndex, 1)[0]);
+ columns.value.splice(dropIndex, 0,columns.value.splice(dragIndex, 1)[0]);
 };
 
 const handlerRowDblclick = (row, line) => {
   console.log("双击当前行", row, line);
 };
 
-const columns = reactive([
+let columns = ref([
   {
     label: "id",
     prop: "id",
