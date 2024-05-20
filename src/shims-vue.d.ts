@@ -1,2 +1,2 @@
 declare module 'get-value'
-declare module 'lodash'
+declare module 'lodash-es'
