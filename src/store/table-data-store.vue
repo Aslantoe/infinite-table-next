@@ -1,6 +1,6 @@
 <!-- 此实例被 mixin 到 table.vue, 可用用this获取 table.vue 属性方法 -->
 <script lang="ts">
-import { defineComponent, ref, reactive, inject, computed } from "vue";
+import { defineComponent, ref, reactive, computed } from "vue";
 import { get, getDataKey, intersection, isEmpty } from "../utils/object";
 import TableColumnItem from "./table-column-item";
 import { RowItemType, RowKeyType } from "../common/types";
@@ -50,7 +50,9 @@ export default defineComponent({
 
     const normalData = computed(() => {
       const set = new Set(fixedKeys.value);
+      // @ts-ignore
       const data = this.tableData.filter(
+        // @ts-ignore
         (dataItem) => !set.has(getDataKey(dataItem, this.tableOptions.rowKey))
       );
       return this.compareDataItem(data);
@@ -58,7 +60,9 @@ export default defineComponent({
 
     const fixedData = computed(() => {
       const set = new Set(fixedKeys.value);
+      // @ts-ignore
       return this.tableData.filter((dataItem) =>
+      // @ts-ignore
         set.has(get(dataItem, this.tableOptions.rowKey))
       );
     });
@@ -85,12 +89,14 @@ export default defineComponent({
          * 同时将已经不存在的数据从selectedRows中清除
          */
         const selectedRowIdList = this.selectedRows.map((item) =>
+        // @ts-ignore
           getDataKey(item, this.rowKey)
         );
         const set = new Set(selectedRowIdList);
-        const nextSelectedRows = [];
+        const nextSelectedRows: any[] = [];
         for (let i = 0; i < this.tableData.length; i += 1) {
           const item = this.tableData[i];
+          // @ts-ignore
           if (set.has(getDataKey(item, this.rowKey))) {
             nextSelectedRows.push(item);
           }
@@ -146,6 +152,7 @@ export default defineComponent({
      * @param nextData
      */
     updateData(nextData: RowItemType[]) {
+      // @ts-ignore
       if (this.tableOptions.freezeRow) {
         this.tableData = nextData.map((item: any) => Object.freeze(item));
       } else {
@@ -186,7 +193,7 @@ export default defineComponent({
     },
 
     addSelectedRows(...rows: RowItemType[]) {
-      rows.forEach((item, index) => {
+      rows.forEach((item, _index) => {
         if (!this.isRowSelected(item)) {
           this.selectedRows.push(item);
         }
@@ -194,7 +201,7 @@ export default defineComponent({
     },
 
     removeSelectedRows(...rows: RowItemType[]) {
-      rows.forEach((item, rowIndex: number) => {
+      rows.forEach((item, _rowIndex: number) => {
         const index = this.findSelectedRowIndex(item);
         if (index !== -1) {
           this.selectedRows.splice(index, 1);
@@ -211,8 +218,10 @@ export default defineComponent({
     },
 
     findSelectedRowIndex(row: RowItemType): number {
+      // @ts-ignore
       const rowDateKey = getDataKey(row, this.rowKey);
       return this.selectedRows.findIndex(
+        // @ts-ignore
         (item) => getDataKey(item, this.rowKey) === rowDateKey
       );
     },

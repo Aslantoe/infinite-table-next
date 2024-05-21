@@ -1,5 +1,6 @@
 <script lang="tsx">
-import { defineComponent, ref, inject, reactive, h } from "vue";
+// @ts-nocheck
+import { defineComponent, ref, reactive, h } from "vue";
 import { RowItemType } from "./common/types";
 import RangeRender from "./render/range-render.vue";
 import TableRow from "./table-row.vue";

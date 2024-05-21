@@ -6,7 +6,7 @@ import {
   checkboxHeaderRender,
   defaultHeaderRender,
 } from "@/render/headerRenders";
-import TableStore from "@/table-store";
+import TableStore from "@/table-store.vue";
 import {
   RowItemType,
   ElementExtraAttrs,
@@ -26,12 +26,12 @@ import { defaultComparator } from "./table-data-store.vue";
  * @return {string}
  */
 export const defaultColumnRender = function defaultColumnRender(
-  h,
+  _h,
   props: {
     options: TableColumnItem;
     rowIndex: number;
     row: any;
-    tableStore: TableStore;
+    tableStore: typeof TableStore;
   }
 ): VNode | string {
   if (!props || !props.options || !props.row) {

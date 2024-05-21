@@ -3,8 +3,8 @@
     <button @click="addColumn">添加一列</button>
     <button @click="removeColumn">减少一列</button>
     <InfiniteTableNext
-      row-key="id"
-      :height="500"
+    row-key="id"
+    :height="500"
       :data="tableData"
       :table-columns="columns"
       :row-extra-attrs="rowExtraClass"
@@ -20,11 +20,12 @@
       @header-drop="handleHeaderDrop"
       @row-dblclick="handlerRowDblclick"
       @current-change="handleCurrentChange"
-    />
-  </div>
-</template>
+      />
+    </div>
+  </template>
 
 <script setup lang="tsx">
+// @ts-nocheck
 import { ref } from "vue";
 import InfiniteTableNext from "./table.vue";
 
@@ -88,7 +89,7 @@ const tableData = ref([
   },
 ]);
 
-const rowExtraClass = (rowItem, rowIndex) => {
+const rowExtraClass = (rowItem, _rowIndex) => {
   const timestamp = new Date("2016-05-02").valueOf();
   if (new Date(rowItem.date).valueOf() < timestamp) {
     return {
@@ -107,8 +108,8 @@ const handleCurrentChange = (row) => {
 /**
  * 列宽拖动
  */
-const handleColumnResize = (columnIndex, column, size) => {
-  columns[columnIndex].width += size;
+const handleColumnResize = (columnIndex, _column, size) => {
+  columns.value[columnIndex].width += size;
 };
 
 /**
@@ -144,7 +145,7 @@ let columns = ref([
     prop: "date",
     fixed: "left",
     width: 100,
-    columnRender: (h, { row }) => {
+    columnRender: (_h, { row }) => {
       return <div style="color: yellow">{row.date}</div>;
     },
   },

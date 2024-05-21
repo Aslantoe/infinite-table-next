@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { PropType, defineComponent, ref, reactive, toRaw } from "vue";
+import { PropType, defineComponent, ref, toRaw } from "vue";
 import get from "get-value";
 import { calcAccumulationIndex, calcFixedIndex } from "./transform";
 import "./style.scss";
@@ -131,7 +131,7 @@ export default defineComponent({
     accumulationOffset(): any[] {
       if (this.sizeField) {
         let sum = 0;
-        return this.data.map((item: any, index: number, data: any[]) => {
+        return this.data.map((_item: any, index: number, data: any[]) => {
           if (index === 0) {
             return 0;
           }

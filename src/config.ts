@@ -1,11 +1,11 @@
-import Vue from 'vue';
+// import Vue from 'vue';
 import { TableConfig } from '@/common/types';
 
 const config: TableConfig = {
   minColumnWidth: 80,
 };
 
-const configKey = '$TABLE_CONFIG';
+// const configKey = '$TABLE_CONFIG';
 
 // FIXME: 实现一个通过defaults覆盖设置的功能
 Object.defineProperty(config, 'minColumnWidth', {

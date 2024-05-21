@@ -235,6 +235,7 @@ export default defineComponent({
   methods: {
     doLayoutDebounced: debounce(
       function (width, height) {
+        // @ts-ignore
         this._doLayout(width, height);
       },
       200,
@@ -386,10 +387,11 @@ export default defineComponent({
     tryScrollInvisibleElem(
       rowIndex: number,
       columnIndex: number,
-      rowPosition: string,
-      columnPosition: string
+      _rowPosition: string,
+      _columnPosition: string
     ) {
       const { rowHeight } = this.tableOptions;
+      // @ts-ignore
       const { scrollTop, scrollLeft } = this.scrollElement;
       const { viewportWidth, viewportHeight } = this.layoutSize;
       const { tableData, fixedData } = this;
@@ -500,6 +502,7 @@ export default defineComponent({
         } else if (position === "right" && column.fixed !== "right") {
           fixedOffset = rightFixedColumnWidth * -1;
         }
+        // @ts-ignore
         this.scrollElement.scrollLeft = offset + positionOffset - fixedOffset;
       }
     },
@@ -521,10 +524,8 @@ export default defineComponent({
           positionOffset = -1 * (layoutSize.viewportHeight - rowHeight);
         }
         const y = rowHeight * index;
-        this.scrollElement.scrollTo(
-          this.scrollElement.scrollLeft,
-          y + positionOffset
-        );
+        // @ts-ignore
+        this.scrollElement.scrollTo( this.scrollElement.scrollLeft, y + positionOffset );
       }
     },
 
@@ -544,6 +545,7 @@ export default defineComponent({
   },
 
   beforeDestroy() {
+    // @ts-ignore
     this.$destroy();
     this.resizeObserver.disconnect();
   },

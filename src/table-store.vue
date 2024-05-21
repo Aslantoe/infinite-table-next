@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, reactive, ref, PropType, inject } from "vue";
+import { defineComponent, reactive, ref } from "vue";
 import { getDataKey } from "./utils/object";
 import TableColumnItem from "./store/table-column-item";
 import { RowItemType } from "./common/types";
@@ -62,6 +62,7 @@ export default defineComponent({
     },
 
     isSameRow(rowItem1: RowItemType, rowItem2: RowItemType): boolean {
+      // @ts-ignore
       const { rowKey } = this.tableOptions;
       return getDataKey(rowItem1, rowKey) === getDataKey(rowItem2, rowKey);
     },
@@ -78,6 +79,7 @@ export default defineComponent({
       }
       let viewportWidth = tableWidth;
       const tableBodyHeight = getTableBodyHeight(
+        // @ts-ignore
         this.tableOptions.rowHeight,
         this.tableData.length
       );

@@ -31,6 +31,7 @@ export default defineComponent({
         handleHideTooltip();
       });
       eventBus.on("show-tooltip", (data) => {
+        // @ts-ignore
         const { element, textVNode, wrapperClass } = data;
         handleShowTooltip(element, textVNode, wrapperClass);
       });
@@ -73,6 +74,7 @@ export default defineComponent({
       tooltipVisible.value = false;
       if (_tooltip) {
         _tooltip.destroy();
+        // @ts-ignore
         _tooltip = undefined;
       }
     };

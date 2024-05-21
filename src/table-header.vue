@@ -1,4 +1,5 @@
 <script lang="tsx">
+// // @ts-nocheck
 import { defineComponent, ref, reactive, h } from "vue";
 import { getElementOffset, overflowDetection } from "./utils/layout";
 import TableColumnItem from "./store/table-column-item";
@@ -21,6 +22,7 @@ export default defineComponent({
   mixins: [NotifyMixin],
   data() {
     const tableStore = this.$parent;
+    // @ts-ignore 使用父组件 tableOptions
     const tableOptions = this.$parent.tableOptions;
     const mouseEnterIndex = ref<Number>(-1);
     // 列宽拖动指示器
@@ -42,6 +44,7 @@ export default defineComponent({
   computed: {
     // table.vue 中 ref="scrollElement
     scrollElement(): HTMLElement | undefined {
+    // @ts-ignore 使用父组件 scrollElement
       return this.$parent.$refs.scrollElement as HTMLElement;
     },
   },
@@ -53,7 +56,7 @@ export default defineComponent({
     getTableCellClass(column: TableColumnItem, columnIndex: number) {
       const { resizeIndicator, mouseEnterIndex } = this;
       const isCurrentIndex =
-        mouseEnterIndex === columnIndex || mouseEnterIndex - 1 === columnIndex;
+        mouseEnterIndex === columnIndex || Number(mouseEnterIndex) - 1 === columnIndex;
       return {
         "infinite-table__cell--fixed": column.fixed,
         "infinite-table__cell--pointer":
@@ -95,17 +98,17 @@ export default defineComponent({
       }
     },
 
-    handleMouseLeave(evt: MouseEvent) {
+    handleMouseLeave(_evt: MouseEvent) {
       this.mouseEnterIndex = -1;
       eventBus.emit("hide-tooltip");
     },
 
     /**
      * 鼠标在单元格上按下时触发这个方法
-     * @param columnIndex
+     * @param _columnIndex
      * @param event
      */
-    handleMouseDown(columnIndex: number, event: MouseEvent) {
+    handleMouseDown(_columnIndex: number, event: MouseEvent) {
       const { headerResizable } = this.tableOptions;
       // 如果鼠标按下时，鼠标在可以resize的区域内
       if (headerResizable && this.resizeIndicator.hover) {
@@ -142,6 +145,7 @@ export default defineComponent({
         if (this.resizeIndicator.visible) {
           const { activeIndex, startX } = this.resizeIndicator;
           const { pageX } = event;
+          // @ts-ignore
           const activeColumn = this.tableStore.allTableColumns[activeIndex];
           let delta = pageX - startX;
           if (activeColumn.width + delta < TableConfig.minColumnWidth) {
@@ -200,8 +204,8 @@ export default defineComponent({
           currentTarget.draggable = false;
           this.resizeIndicator.hover = true;
           const activeIndex =
-            right - pageX < 8 ? this.mouseEnterIndex : this.mouseEnterIndex - 1;
-          this.resizeIndicator.activeIndex = activeIndex;
+            right - pageX < 8 ? this.mouseEnterIndex : Number(this.mouseEnterIndex) - 1;
+          this.resizeIndicator.activeIndex = Number(activeIndex);
         } else {
           currentTarget.draggable = true;
           this.resizeIndicator.hover = false;
@@ -211,6 +215,7 @@ export default defineComponent({
 
     setResizeIndicatorPosition(event: MouseEvent) {
       // FIXME: 调整this.$parent.$el的调用方式
+      // @ts-ignore
       const { left } = getElementOffset(this.$parent.$el as HTMLElement);
       this.resizeIndicator.left =
         this.getParentScrollLeft() + event.pageX - left;
@@ -229,7 +234,7 @@ export default defineComponent({
       }
     },
 
-    handleHeaderDragOver(columnIndex: number, event: DragEvent) {
+    handleHeaderDragOver(_columnIndex: number, event: DragEvent) {
       if (event.dataTransfer) {
         const index = Array.from(event.dataTransfer.types).indexOf(
           HEADER_DRAG_DATA_TYPE
@@ -252,7 +257,9 @@ export default defineComponent({
         10
       );
       if (!Number.isNaN(dragIndex)) {
+        // @ts-ignore
         const dragItem = tableStore.allTableColumns[dragIndex];
+        // @ts-ignore
         const dropItem = tableStore.allTableColumns[dropIndex];
         this.notify(
           "InfiniteTable",
@@ -266,18 +273,23 @@ export default defineComponent({
     },
 
     getFixedStyle(column: TableColumnItem) {
+      // @ts-ignore
       return this.tableStore.getFixedColumnStyle(column);
     },
 
     getActiveClass(column: TableColumnItem, order: "asc" | "desc" | "nature") {
       // FIXME: 修改order的类型
+      // @ts-ignore
       if (!this.tableStore.sortedOption.column) {
         return false;
       }
       return (
+        // @ts-ignore
         this.tableStore.isSameColumn(
           column,
+        // @ts-ignore
           this.tableStore.sortedOption.column
+        // @ts-ignore
         ) && this.tableStore.sortedOption.order === order
       );
     },
@@ -293,6 +305,7 @@ export default defineComponent({
       // 如果column可以排序，并且TableHeader不处于resize模式中，就设置sortOption
       if (column.sortable) {
         // 排序的逻辑在table-data-store中
+        // @ts-ignore
         this.tableStore.updateSortedOption({ column, order });
         this.$nextTick(() => {
           this.notify("InfiniteTable", "sort-change", {
@@ -304,6 +317,7 @@ export default defineComponent({
     },
   },
   render() {
+    // @ts-ignore
     const { allTableColumns, allColumnsWidth } = this.tableStore;
     return (
       <div
@@ -341,7 +355,7 @@ export default defineComponent({
             ondragover={(evt: DragEvent) =>
               this.handleHeaderDragOver(columnIndex, evt)
             }
-            ondragend={(evt: DragEvent) => this.handleHeaderDragEnd()}
+            ondragend={(_evt: DragEvent) => this.handleHeaderDragEnd()}
             ondrop={(evt: DragEvent) => this.handleHeaderDrop(columnIndex, evt)}
             onClick={(evt: MouseEvent) => {
               if (column.sortable) {

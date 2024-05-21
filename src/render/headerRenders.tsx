@@ -1,10 +1,10 @@
 import { ColumnRenderProps, HeaderRenderProps } from "@/common/types";
 
-export function defaultHeaderRender(h, { options }: HeaderRenderProps) {
+export function defaultHeaderRender(_h, { options }: HeaderRenderProps) {
   return <span>{options.label}</span>;
 }
 
-export function checkboxHeaderRender(h, { tableStore }: HeaderRenderProps) {
+export function checkboxHeaderRender(_h, { tableStore }: HeaderRenderProps) {
   return (
     <input
       class="infinite-table__cell--checkbox"
@@ -22,7 +22,7 @@ export function checkboxHeaderRender(h, { tableStore }: HeaderRenderProps) {
 }
 
 export const checkboxColumnRender = function checkboxColumnRender(
-  h,
+  _h,
   { row, tableStore }: ColumnRenderProps
 ) {
   return (

@@ -44,6 +44,7 @@ export default defineComponent({
   },
   data() {
     const tableStore = this.$parent?.$parent?.$parent;
+    // @ts-ignore
     const tableOptions = this.$parent?.$parent?.$parent.tableOptions;
     const dragoverColumnItem = ref<TableColumnItem>();
     return {
@@ -62,6 +63,7 @@ export default defineComponent({
           ? rowExtraAttrs(rowItem, index)
           : rowExtraAttrs;
       // FIXME: 修改判断行是否选中的方法
+      // @ts-ignore
       const rowSelected = tableStore.isRowSelected(rowItem);
       return {
         style: {
@@ -110,6 +112,7 @@ export default defineComponent({
                 row: data,
                 options: column,
                 rowIndex: this.index,
+                // @ts-ignore
                 tableStore: this.tableStore,
               })
             ) : (
@@ -126,6 +129,7 @@ export default defineComponent({
     },
 
     getFixedStyle(column: TableColumnItem) {
+      // @ts-ignore
       return this.tableStore.getFixedColumnStyle(column);
     },
     /**
@@ -161,7 +165,7 @@ export default defineComponent({
           rowIndex: index,
           tableStore,
         });
-      } catch (e) {
+      } catch (e: any) {
         if (process.env.NODE_ENV !== "production") {
           console.warn("渲染单元格时发生错误");
         }
@@ -174,6 +178,7 @@ export default defineComponent({
      */
     renderTableCell(props: { data: TableColumnItem }) {
       const { data, tableStore, index } = this;
+      // @ts-ignore
       const { focusedRow, selectedColumn } = tableStore;
       const { highlightCurrentCell, rowHeight } = this.tableOptions;
       const { data: columnOption } = props;
@@ -182,7 +187,9 @@ export default defineComponent({
         highlightCurrentCell &&
         selectedColumn &&
         focusedRow &&
+        // @ts-ignore
         tableStore.isSameColumn(selectedColumn, columnOption) && // FIXME: 研究这俩接口是否有存在的必要
+        // @ts-ignore
         tableStore.isSameRow(data, focusedRow);
       let extraAttrs: ElementExtraAttrs = {};
       if (columnOption.columnExtraAttrs) {
@@ -242,13 +249,13 @@ export default defineComponent({
               this.index
             );
           }}
-          ondragover={(e: DragEvent) => {
+          ondragover={(_e: DragEvent) => {
             this.dragoverColumnItem = columnOption;
           }}
           onmouseenter={(evt: MouseEvent) =>
             this.handleMouseEnterCell(data, columnOption, evt)
           }
-          onmouseleave={(evt: MouseEvent) => this.handleMouseLeaveCell()}
+          onmouseleave={(_evt: MouseEvent) => this.handleMouseLeaveCell()}
         >
           <div class="cell-content">
             {this.renderColumnCell(
@@ -265,15 +272,8 @@ export default defineComponent({
   },
 
   render() {
-    const { layoutSize } = this.tableStore;
-    const {
-      leftFixedColumns,
-      rightFixedColumns,
-      mainColumns,
-      leftFixedColumnWidth,
-      rightFixedColumnWidth,
-    } = this.tableStore;
-
+    // @ts-ignore
+    const { layoutSize, leftFixedColumns, rightFixedColumns, mainColumns, leftFixedColumnWidth, rightFixedColumnWidth} = this.tableStore;
     const { offsetX, tableOptions } = this;
     const extraAttrs = this.getExtraRowAttrs(this.data, this.index);
     return (
@@ -282,6 +282,7 @@ export default defineComponent({
         draggable={tableOptions.rowDraggable}
         style={{
           ...extraAttrs.style,
+          // @ts-ignore
           width: `${this.tableStore.allColumnsWidth}px`,
           height: `${tableOptions.rowHeight}px`,
         }}
@@ -332,6 +333,7 @@ export default defineComponent({
           this.renderTableCell({ data: column })
         )}
         <RangeRender
+          // @ts-ignore
           style={{ width: `${this.tableStore.allColumnsWidth}px` }}
           dataKey={(item: TableColumnItem) => item.key}
           data={mainColumns}

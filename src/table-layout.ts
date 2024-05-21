@@ -1,4 +1,4 @@
-import TableColumnItem from '@/hooks/useTableColumnItemHooks';
+import TableColumnItem from '@/store/table-column-item';
 import { sumBy } from '@/utils/collection';
 
 // TODO 修改column默认width的获取方式

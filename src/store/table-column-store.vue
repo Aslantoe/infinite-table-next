@@ -1,9 +1,9 @@
 <!-- 此实例被 mixin 到 table.vue, 可用用this获取 table.vue 属性方法 -->
 <script lang="ts">
-import { defineComponent, reactive, ref, nextTick } from "vue";
+import { defineComponent, reactive, nextTick } from "vue";
 import { sumBy } from "../utils/collection";
 import TableColumnItem from "./table-column-item";
-import { RowItemType, TableOptions, ColumnFixedType } from "../common/types";
+import { RowItemType, ColumnFixedType } from "../common/types";
 // import { TableLayout } from "@/table-store";
 import { getDataKey } from "../utils/object";
 
@@ -11,6 +11,7 @@ export default defineComponent({
   data() {
     let normalData = reactive<RowItemType[]>([]);
     nextTick(() => {
+      // @ts-ignore
       normalData = this.normalData;
     });
     const columnStore = reactive<TableColumnItem[]>([]);
@@ -54,7 +55,7 @@ export default defineComponent({
 
     columnOffset(): number[] {
       let sum = 0;
-      return this.allTableColumns.map((item, index) => {
+      return this.allTableColumns.map((_item, index) => {
         if (index === 0) {
           return 0;
         }
@@ -131,6 +132,7 @@ export default defineComponent({
     },
 
     findRowIndex(key: string): number {
+      // @ts-ignore
       const { rowKey } = this.tableOptions;
       return this.normalData.findIndex(
         (item) => getDataKey(item, rowKey) === key
