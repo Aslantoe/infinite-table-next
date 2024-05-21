@@ -1,8 +1,13 @@
 {
   "name": "infinite-table-next",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "main": "dist/InfiniteTableNext.umd.js",
+  "module": "dist/InfiniteTableNext.esm.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",

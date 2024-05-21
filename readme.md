@@ -1,5 +1,7 @@
 # InfiniteTable
 
+访问demo页面 http://localhost:5173/example/demo.html
+
 ## 属性
 
 | 属性                 | 描述                                                         | 类型                                  | 必须 | 默认值       |
