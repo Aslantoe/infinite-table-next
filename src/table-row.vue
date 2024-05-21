@@ -202,6 +202,7 @@ export default defineComponent({
         "fixed-right": columnOption.fixed === "right",
         ...normalizeClass(extraAttrs.class),
       };
+      const attrs = extraAttrs.attrs;
       return (
         <div
           class={[
@@ -214,7 +215,7 @@ export default defineComponent({
             ...this.getFixedStyle(columnOption),
             ...extraAttrs.style,
           }}
-          attrs={{ ...extraAttrs.attrs }}
+          {...attrs}
           onclick={(evt: MouseEvent) => {
             this.dispatchRowEvent(
               "cell-click",

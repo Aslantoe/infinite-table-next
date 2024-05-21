@@ -24,14 +24,6 @@ export default defineComponent({
     };
   },
 
-  computed: {
-    tableBodyListeners(): Record<string, Function | Function[]> {
-      return {
-        ...h,
-      };
-    },
-  },
-
   mounted() {
     this.scroll = this.getScrollElement();
     this.scroll.addEventListener("scroll", this.handleScroll);
@@ -133,9 +125,6 @@ export default defineComponent({
           height: `${tableStore.layoutSize.viewportHeight}px`,
           "transform-style":
             tableStore.fixedData.length >= 0 ? "preserve-3d" : "initial",
-        }}
-        {...{
-          on: this.tableBodyListeners,
         }}
       >
         {tableStore.fixedData.length > 0 && this.renderFixedRow()}
