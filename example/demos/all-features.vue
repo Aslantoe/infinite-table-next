@@ -34,6 +34,7 @@ const addColumn = () => {
     label: columnIndex,
     width: Math.random() * 500 + 20,
     sortable: true,
+    prop: "key",
     sortBy: "key",
     columnRender: (_h, { row }) => {
       return `${row.id}-${columnIndex}000000000000000000000000000000000000000`;
