@@ -31,7 +31,7 @@ enum KeyStatus {
 type MoveDirection = "left" | "right" | "up" | "down";
 
 export default defineComponent({
-  name: "InfiniteTable",
+  name: "InfiniteTableNext",
   components: { TableHeader, TableBody, TooltipRender },
   mixins: [TableStore],
   props: {

@@ -1,4 +1,8 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import type { App } from 'vue'
+import InfiniteTableNext from './table.vue'
 
-createApp(App).mount('#app')
+InfiniteTableNext.install = (app: App) => {
+  app.component('InfiniteTableNext', InfiniteTableNext)
+}
+// export { InfiniteTableNext }
+export default InfiniteTableNext

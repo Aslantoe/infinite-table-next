@@ -9,6 +9,7 @@ import { createApp } from 'vue'
 // import highlightcurrentrow from './demos/highlight-current-row.vue'
 // import rowdraggable from './demos/row-draggable.vue'
 import allfeatures from './demos/all-features.vue'
-import InfiniteTableNext from '../src/index'
+import InfiniteTableNext from '../src/main'
 
+//@ts-ignore
 createApp(allfeatures).use(InfiniteTableNext).mount('#app')
