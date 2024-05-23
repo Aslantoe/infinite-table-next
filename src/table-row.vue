@@ -148,7 +148,7 @@ export default defineComponent({
       rowIndex: number
     ) {
       eventBus.emit(eventName, {data, column, e, rowIndex});
-      this.notify("InfiniteTable", eventName, data, column, e, rowIndex);
+      this.notify("InfiniteTableNext", eventName, data, column, e, rowIndex);
     },
 
     renderColumnCell(

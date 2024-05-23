@@ -152,7 +152,7 @@ export default defineComponent({
             delta = TableConfig.minColumnWidth - activeColumn.width;
           }
           this.notify(
-            "InfiniteTable",
+            "InfiniteTableNext",
             "column-resize",
             activeIndex,
             activeColumn,
@@ -262,7 +262,7 @@ export default defineComponent({
         // @ts-ignore
         const dropItem = tableStore.allTableColumns[dropIndex];
         this.notify(
-          "InfiniteTable",
+          "InfiniteTableNext",
           "header-drop",
           dragIndex,
           dragItem,
@@ -308,7 +308,7 @@ export default defineComponent({
         // @ts-ignore
         this.tableStore.updateSortedOption({ column, order });
         this.$nextTick(() => {
-          this.notify("InfiniteTable", "sort-change", {
+          this.notify("InfiniteTableNext", "sort-change", {
             column,
             order,
           });
@@ -362,7 +362,7 @@ export default defineComponent({
                 this.handleColumnSort(column);
               } else {
                 this.notify(
-                  "InfiniteTable",
+                  "InfiniteTableNext",
                   "header-column-click",
                   column,
                   evt
