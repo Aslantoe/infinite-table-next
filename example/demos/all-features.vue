@@ -140,6 +140,10 @@ const handlerRowDblclick = (row, line) => {
   console.log("双击当前行", row, line);
 };
 
+const update = (row) => {
+  console.log("update", row);
+};
+
 let columns = ref([
   { type: "selection", key: "selection", fixed: "left" },
   {
@@ -176,23 +180,41 @@ let columns = ref([
   {
     label: "城市",
     prop: "city",
+    width: 100,
   },
   {
     label: "地址",
     prop: "address",
+    width: 100,
   },
   {
     label: "zip",
     prop: "zip",
+    width: 100,
   },
   {
-    label: "地址",
+    label: "地址1",
     prop: "address",
+    width: 100,
   },
   {
     label: "Tag",
     prop: "tag",
+    width: 100,
     fixed: "right",
+  },
+  {
+    label: "操作",
+    fixed: "right",
+    width: 200,
+    columnRender: (h, { row }) => {
+      return (
+        <div>
+          <button onclick={() => update(row)}>update</button>
+          <button>delete</button>
+        </div>
+      );
+    },
   },
 ]);
 </script>
