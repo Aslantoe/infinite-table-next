@@ -78,3 +78,11 @@ const tableData = [
 ];
 </script>
 ```
+
+## 常见错误
+
+1、使用 render 报错 ```ReferenceError: React is not defined```
+
+- 原因：项目没有引入vuejsx
+- 解决：安装vuejsx相关插件
+  
