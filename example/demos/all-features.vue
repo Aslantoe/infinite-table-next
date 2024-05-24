@@ -112,7 +112,8 @@ const handleCurrentChange = (row) => {
 /**
  * 列宽拖动
  */
-const handleColumnResize = (columnIndex, _column, size) => {
+const handleColumnResize = (columnIndex, column, size) => {
+  columns.value[columnIndex].width = column.width;
   columns.value[columnIndex].width += size;
 };
 
@@ -180,28 +181,19 @@ let columns = ref([
   {
     label: "城市",
     prop: "city",
-    width: 100,
+    width: null,
   },
   {
     label: "地址",
     prop: "address",
-    width: 100,
   },
   {
     label: "zip",
     prop: "zip",
-    width: 100,
-  },
-  {
-    label: "地址1",
-    prop: "address",
-    width: 100,
   },
   {
     label: "Tag",
     prop: "tag",
-    width: 100,
-    fixed: "right",
   },
   {
     label: "操作",
