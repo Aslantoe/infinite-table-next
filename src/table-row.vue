@@ -3,7 +3,7 @@ import { defineComponent, ref, h, PropType } from "vue";
 import RangeRender from "./render/range-render.vue";
 import NotifyMixin from "./event-emitter.vue";
 import TableColumnItem, { ColumnRender } from "./store/table-column-item";
-import { ElementExtraAttrs, RowItemType } from "./common/types";
+import { ElementExtraAttrs, RowItemType, TableOptions } from "./common/types";
 import { overflowDetection } from "./utils/layout";
 import { eventBus } from "./eventBus";
 
@@ -41,30 +41,29 @@ export default defineComponent({
       type: Number,
       default: 0,
     },
+    tableStore: {},
+    tableOptions: {
+      type: Object as PropType<TableOptions>
+    }
   },
   data() {
-    const tableStore = this.$parent?.$parent?.$parent;
-    // @ts-ignore
-    const tableOptions = this.$parent?.$parent?.$parent.tableOptions;
     const dragoverColumnItem = ref<TableColumnItem>();
     return {
-      tableStore,
-      tableOptions,
       dragoverColumnItem,
     };
   },
 
   methods: {
     getExtraRowAttrs(rowItem: RowItemType, index: number): ElementExtraAttrs {
+      // @ts-ignore
       const { striped, rowExtraAttrs, highlightCurrentRow } = this.tableOptions;
-      const tableStore = this.tableStore;
       const extraAttrs =
         typeof rowExtraAttrs === "function"
           ? rowExtraAttrs(rowItem, index)
           : rowExtraAttrs;
       // FIXME: 修改判断行是否选中的方法
       // @ts-ignore
-      const rowSelected = tableStore.isRowSelected(rowItem);
+      const rowSelected = this.tableStore.isRowSelected(rowItem);
       return {
         style: {
           ...extraAttrs.style,
@@ -180,6 +179,7 @@ export default defineComponent({
       const { data, tableStore, index } = this;
       // @ts-ignore
       const { focusedRow, selectedColumn } = tableStore;
+      // @ts-ignore
       const { highlightCurrentCell, rowHeight } = this.tableOptions;
       const { data: columnOption } = props;
       const { columnRender } = columnOption;
@@ -274,18 +274,18 @@ export default defineComponent({
 
   render() {
     // @ts-ignore
-    const { layoutSize, leftFixedColumns, rightFixedColumns, mainColumns, leftFixedColumnWidth, rightFixedColumnWidth} = this.tableStore;
-    const { offsetX, tableOptions } = this;
+    const { layoutSize, leftFixedColumns, rightFixedColumns, mainColumns, leftFixedColumnWidth, rightFixedColumnWidth, allColumnsWidth} = this.tableStore;
+    // @ts-ignore
+    const { rowHeight, rowDraggable } = this.tableOptions;
     const extraAttrs = this.getExtraRowAttrs(this.data, this.index);
     return (
       <div
         class={["infinite-table__row", extraAttrs.class]}
-        draggable={tableOptions.rowDraggable}
+        draggable={rowDraggable}
         style={{
           ...extraAttrs.style,
-          // @ts-ignore
-          width: `${this.tableStore.allColumnsWidth}px`,
-          height: `${tableOptions.rowHeight}px`,
+          width: `${allColumnsWidth}px`,
+          height: `${rowHeight}px`,
         }}
         ondragstart={(evt: DragEvent) => {
           // 避免table-body再次触发相同类型的事件（例如dnd相关的事件)
@@ -334,13 +334,12 @@ export default defineComponent({
           this.renderTableCell({ data: column })
         )}
         <RangeRender
-          // @ts-ignore
-          style={{ width: `${this.tableStore.allColumnsWidth}px` }}
+          style={{ width: `${allColumnsWidth}px` }}
           dataKey={(item: TableColumnItem) => item.key}
           data={mainColumns}
           direction="horizontal"
           sizeField="width"
-          offset={offsetX}
+          offset={this.offsetX}
           viewportSize={
             layoutSize.viewportWidth -
             leftFixedColumnWidth -

@@ -561,7 +561,6 @@ export default defineComponent({
           this.handleKeyEvent(evt, KeyStatus.DOWN)
         }
         onkeyup={(evt: KeyboardEvent) => this.handleKeyEvent(evt, KeyStatus.UP)}
-        onclick={() => this.focus()}
       >
         <div ref="scrollElement" class="infinite-table--scrollable">
           <table-header class={this.tableHeaderClass} />

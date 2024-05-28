@@ -2,9 +2,11 @@
   <div style="width: 100%">
     <button @click="addColumn">添加一列</button>
     <button @click="removeColumn">减少一列</button>
+    <button @click="rowFixed">置顶</button>
+    <button @click="rowFixedCancel">取消置顶</button>
     <InfiniteTableNext
       row-key="id"
-      :height="500"
+      :height="200"
       :data="tableData"
       :table-columns="columns"
       :row-extra-attrs="rowExtraClass"
@@ -15,7 +17,8 @@
       header-order-draggable
       highlight-current-cell
       highlight-current-row
-      multiple-selection
+      :multiple-selection="true"
+      :top-fixed-keys="topFixedKeys"
       @column-resize="handleColumnResize"
       @header-drop="handleHeaderDrop"
       @row-dblclick="handlerRowDblclick"
@@ -25,8 +28,19 @@
 </template>
 
 <script setup lang="tsx">
+// :top-fixed-keys="['1', '2']"
 // @ts-nocheck
 import { ref } from "vue";
+
+const topFixedKeys = ref([]);
+
+const rowFixed = () => {
+  topFixedKeys.value = ['1', '2'];
+};
+
+const rowFixedCancel = () => {
+  topFixedKeys.value = [];
+};
 
 const addColumn = () => {
   const columnIndex = columns.value.length;

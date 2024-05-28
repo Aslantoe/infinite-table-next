@@ -81,7 +81,7 @@
 .infinite-table--scrollable {
   overflow-x: auto;
   overflow-y: auto;
-  min-height: 100%;
+  height: 100%;
   /**
   FIXME: 开启此CSS会导致白屏问题
    */
@@ -190,6 +190,7 @@
 
 .infinite-table__body {
   position: relative;
+  contain: layout;
 
   .tooltip-reference {
     position: absolute;

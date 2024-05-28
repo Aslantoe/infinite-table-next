@@ -57,6 +57,8 @@ export default defineComponent({
           const { data, index } = slotProps;
           return (
             <TableRow
+              tableStore={this.tableStore}
+              tableOptions={this.tableOptions}
               index={index + this.tableStore.fixedData.length}
               offset-x={this.grid.offsetX}
               data={data}
@@ -69,7 +71,7 @@ export default defineComponent({
     renderNormalRows() {
       const tableStore = this.tableStore;
       return (
-        <range-render
+        <RangeRender
           data={tableStore.normalData}
           direction="vertical"
           size={this.tableOptions.rowHeight}
@@ -91,11 +93,14 @@ export default defineComponent({
         <div
           style={{
             position: "relative",
-            transform: `translate3d(0, ${this.grid.offsetY}px, 1px)`,
+            transform: `translate(0, ${this.grid.offsetY}px)`,
+            zIndex: 1000
           }}
         >
           {this.tableStore.fixedData.map((rowData, index) => (
-            <table-row
+            <TableRow
+              tableStore={this.tableStore}
+              tableOptions={this.tableOptions}
               key={index}
               index={index}
               offsetX={this.grid.offsetX}
@@ -122,23 +127,12 @@ export default defineComponent({
         ref="tableBody"
         class="infinite-table__body"
         style={{
-          height: `${tableStore.layoutSize.viewportHeight}px`,
-          "transform-style":
-            tableStore.fixedData.length >= 0 ? "preserve-3d" : "initial",
+          height: `${(tableStore.normalData.length + tableStore.fixedData.length) * this.tableOptions.rowHeight}px`,
+          width: `${tableStore.allColumnsWidth}px`,
         }}
       >
         {tableStore.fixedData.length > 0 && this.renderFixedRow()}
         {this.renderNormalRows()}
-        <div
-          style={{
-            transform: `translateY(${
-              tableStore.normalData?.length * this.tableOptions.rowHeight
-            }px)`,
-            width: `${tableStore.allColumnsWidth}px`,
-            position: "absolute",
-            height: "1px",
-          }}
-        />
       </div>
     );
   },
