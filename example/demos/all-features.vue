@@ -4,25 +4,29 @@
     <button @click="removeColumn">减少一列</button>
     <button @click="rowFixed">置顶</button>
     <button @click="rowFixedCancel">取消置顶</button>
+    <button @click="toLastRow">滚动到最后一行</button>
+    <button @click="toFirstRow">滚动到第一行</button>
     <InfiniteTableNext
+      ref="myTable"
       row-key="id"
-      :height="200"
-      :data="tableData"
-      :table-columns="columns"
-      :row-extra-attrs="rowExtraClass"
-      :striped="true"
       header-height="48px"
       row-height="45px"
       header-resizeable
       header-order-draggable
       highlight-current-cell
       highlight-current-row
+      :height="400"
+      :data="tableData"
+      :table-columns="columns"
+      :row-extra-attrs="rowExtraClass"
+      :striped="true"
       :multiple-selection="true"
       :top-fixed-keys="topFixedKeys"
       @column-resize="handleColumnResize"
       @header-drop="handleHeaderDrop"
       @row-dblclick="handlerRowDblclick"
       @current-change="handleCurrentChange"
+      @row-contextmenu="handleContextmenu"
     />
   </div>
 </template>
@@ -32,10 +36,26 @@
 // @ts-nocheck
 import { ref } from "vue";
 
+const myTable = ref();
+
+const toLastRow = () => {
+  myTable.value.scrollToRow(tableData.value[10], "bottom");
+};
+
+const toFirstRow = () => {
+  myTable.value.scrollToRow(tableData.value[0], "top");
+};
+
+const handleContextmenu = (row, column, event) => {
+  // 阻止右键默认行为
+  event.preventDefault();
+  console.log("右键", row, column, event);
+};
+
 const topFixedKeys = ref([]);
 
 const rowFixed = () => {
-  topFixedKeys.value = ['1', '2'];
+  topFixedKeys.value = ["1", "2"];
 };
 
 const rowFixedCancel = () => {
@@ -105,6 +125,83 @@ const tableData = ref([
     zip: "CA 90036",
     tag: "Office",
   },
+  {
+    id: "5",
+    date: "2016-05-02",
+    name: "Tom",
+    age: 18,
+    state: "California",
+    city: "Los Angeles",
+    address: "No. 189, Grove St, Los Angeles",
+    zip: "CA 90036",
+    tag: "Office",
+  },
+  {
+    id: "6",
+    date: "2016-05-02",
+    name: "Tom",
+    age: 18,
+    state: "California",
+    city: "Los Angeles",
+    address: "No. 189, Grove St, Los Angeles",
+    zip: "CA 90036",
+    tag: "Office",
+  },
+  {
+    id: "7",
+    date: "2016-05-02",
+    name: "Tom",
+    age: 18,
+    state: "California",
+    city: "Los Angeles",
+    address: "No. 189, Grove St, Los Angeles",
+    zip: "CA 90036",
+    tag: "Office",
+  },
+  {
+    id: "8",
+    date: "2016-05-02",
+    name: "Tom",
+    age: 18,
+    state: "California",
+    city: "Los Angeles",
+    address: "No. 189, Grove St, Los Angeles",
+    zip: "CA 90036",
+    tag: "Office",
+  },
+  {
+    id: "9",
+    date: "2016-05-02",
+    name: "Tom",
+    age: 18,
+    state: "California",
+    city: "Los Angeles",
+    address: "No. 189, Grove St, Los Angeles",
+    zip: "CA 90036",
+    tag: "Office",
+  },
+  {
+    id: "10",
+    date: "2016-05-02",
+    name: "Tom",
+    age: 18,
+    state: "California",
+    city: "Los Angeles",
+    address: "No. 189, Grove St, Los Angeles",
+    zip: "CA 90036",
+    tag: "Office",
+  },
+  {
+    id: "11",
+    date: "2016-05-02",
+    name: "Tom",
+    age: 18,
+    state: "California",
+    city: "Los Angeles",
+    address: "No. 189, Grove St, Los Angeles",
+    zip: "CA 90036",
+    tag: "Office",
+  }
 ]);
 
 const rowExtraClass = (rowItem, _rowIndex) => {
