@@ -79,6 +79,46 @@ const tableData = [
 </script>
 ```
 
+## 主题样式修改
+
+新建.scss文件, 应用到 main.ts中
+
+``` scss
+$table-text-color: #fff;
+$table-header-text-color: #fff ;
+
+$table-background-color: #243443;
+$table-header-background-color: #2d2d2d;
+
+$table-row-background-color: #243443;
+$table-row-background-color--striped: #2d2d2d;
+
+/* table的字号 */
+$table-font-size: 14px;
+
+/* table表头的border-bottom */
+$table-header-border-bottom: 1px solid #252629;
+/* 行hover高亮  */
+$table-row-hover-color: #2050A0;
+/* 行选中高亮  */
+$table-row-selected-color: #2050A0;
+/* 单元格选中的颜色 */
+$table-cell-selected-color: #FFFFFF;
+$table-cell-selected-text-color: #ffffff;
+
+$table-sortable-color: #fefefe;
+/* 可排序列箭头颜色  */
+$table-sortable-color--active: $table-row-hover-color;
+$table-tooltip-background: #3c9afb;
+
+/* 行之间分割线的颜色 */
+$table-row-divider-color: #252629;
+
+/* 重要！一定要将此行内容放到变量下面 */
+@import "@cares/infinite-table-next/dist/styles/main";
+
+```
+
 ## 常见错误
 
 1、使用 render 报错 ```ReferenceError: React is not defined```
