@@ -22,7 +22,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { ref } from "vue";
 
 const handleCurrentChange = (row) => {
@@ -37,6 +37,13 @@ const columns = ref([
   {
     label: "日期",
     prop: "date",
+    headerRender: () => {
+      return (
+        <div>
+          <button>update</button>
+        </div>
+      );
+    },
   },
   {
     label: "姓名",
