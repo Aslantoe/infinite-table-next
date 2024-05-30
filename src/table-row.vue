@@ -140,14 +140,17 @@ export default defineComponent({
      * @param rowIndex 
      */
     dispatchRowEvent(
+      componentNameArr: Array<string>,
       eventName: string,
       data: any,
       column: TableColumnItem,
       e: MouseEvent,
       rowIndex: number
     ) {
-      eventBus.emit(eventName, {data, column, e, rowIndex});
-      this.notify("InfiniteTableNext", eventName, data, column, e, rowIndex);
+      // eventBus.emit(eventName, {data, column, e, rowIndex});
+      for (const componentName of componentNameArr) {
+        this.notify(componentName, eventName, data, column, e, rowIndex);
+      }
     },
 
     renderColumnCell(
@@ -218,6 +221,7 @@ export default defineComponent({
           {...attrs}
           onclick={(evt: MouseEvent) => {
             this.dispatchRowEvent(
+              ["TableBody", "InfiniteTableNext"],
               "cell-click",
               data,
               columnOption,
@@ -225,6 +229,7 @@ export default defineComponent({
               this.index
             );
             this.dispatchRowEvent(
+              ["TableBody", "InfiniteTableNext"],
               "row-click",
               data,
               columnOption,
@@ -234,6 +239,7 @@ export default defineComponent({
           }}
           oncontextmenu={(evt: MouseEvent) => {
             this.dispatchRowEvent(
+              ["TableBody", "InfiniteTableNext"],
               "row-contextmenu",
               data,
               columnOption,
@@ -243,6 +249,7 @@ export default defineComponent({
           }}
           ondblclick={(evt: MouseEvent) => {
             this.dispatchRowEvent(
+              ["InfiniteTableNext"],
               "row-dblclick",
               data,
               columnOption,
@@ -291,6 +298,7 @@ export default defineComponent({
           // 避免table-body再次触发相同类型的事件（例如dnd相关的事件)
           evt.stopPropagation();
           this.dispatchRowEvent(
+            ["InfiniteTableNext"],
             "row-dragstart",
             this.data,
             this.dragoverColumnItem as any,
@@ -301,6 +309,7 @@ export default defineComponent({
         ondragend={(evt: DragEvent) => {
           evt.stopPropagation();
           this.dispatchRowEvent(
+            ["InfiniteTableNext"],
             "row-dragend",
             this.data,
             this.dragoverColumnItem as any,
@@ -311,6 +320,7 @@ export default defineComponent({
         ondragover={(evt: DragEvent) => {
           evt.stopPropagation();
           this.dispatchRowEvent(
+            ["InfiniteTableNext"],
             "row-dragover",
             this.data,
             this.dragoverColumnItem as any,
@@ -321,6 +331,7 @@ export default defineComponent({
         ondrop={(evt: DragEvent) => {
           evt.stopPropagation();
           this.dispatchRowEvent(
+            ["InfiniteTableNext"],
             "row-drop",
             this.data,
             this.dragoverColumnItem as any,

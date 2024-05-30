@@ -1,5 +1,6 @@
 <script lang="tsx">
 import ResizeObserver from "resize-observer-polyfill";
+window.ResizeObserver = ResizeObserver;
 import { PropType, defineComponent, ref, h, reactive } from "vue";
 import TableColumnItem, { TableColumnOptions } from "./store/table-column-item";
 import { getDataKey } from "./utils/object";
@@ -14,7 +15,6 @@ import TableBody from "./table-body.vue";
 import TableStore from "./table-store.vue";
 import TooltipRender from "./tooltip-render.vue";
 import { num2px, getClientSize, px2num } from "./utils/layout";
-import { eventBus } from "./eventBus";
 import "./styles/main.scss";
 import { debounce } from "lodash-es";
 
@@ -109,13 +109,13 @@ export default defineComponent({
 
   setup(props) {
     let resizeObserver;
+    let debouncedHandler = null;
     const composeKey = reactive({
       shift: false,
       control: false,
     });
     const scrollElement = ref<HTMLElement>();
     const tableRef = ref();
-    const tableStoreRef = ref(null);
 
     const tableOptions = reactive<TableOptions>({
       rowExtraAttrs: props.rowExtraAttrs,
@@ -137,12 +137,12 @@ export default defineComponent({
     };
 
     return {
+      debouncedHandler,
       resizeObserver,
       composeKey,
       scrollElement,
       tableRef,
       tableOptions,
-      tableStoreRef,
       tableDefaultOptions,
     };
   },
@@ -199,32 +199,22 @@ export default defineComponent({
   },
 
   created() {
+    this.debouncedHandler = debounce(this._doLayout, 200, {
+      leading: false,
+      trailing: true,
+      maxWait: 2000,
+    });
     // FIXME: 修复无法正常传递table对象的问题
     this.table = this;
   },
   mounted() {
-    // 点击当前行
-    eventBus.on("row-click", (val: any) => {
-      this.selectRow(val.data);
-    });
-    // 点击当前单元格
-    eventBus.on("cell-click", (val: any) => {
-      this.selectedColumn = val.column;
-    });
-    // 右键
-    eventBus.on("row-contextmenu", (val: any) => {
-      // 如果当前行已经被选中，那么不再触发current-change事件
-      // 用于多选时可以在选中的行上使用右键菜单
-      if (!this.isRowSelected(val.data)) {
-        this.selectRow(val.data);
-      }
-    });
     // resizeObserver
     this.resizeObserver = new ResizeObserver((observerEntries) => {
       if (observerEntries && observerEntries.length > 0) {
         const entry = observerEntries[0];
         const { width, height } = entry.contentRect;
-        this.doLayoutDebounced(width, height);
+        // @ts-ignore
+         this.debouncedHandler(width, height);
       }
     });
     this.resizeObserver.observe(this.tableRef);
@@ -233,18 +223,6 @@ export default defineComponent({
   },
 
   methods: {
-    doLayoutDebounced: debounce(
-      function (width, height) {
-        // @ts-ignore
-        this._doLayout(width, height);
-      },
-      200,
-      {
-        leading: false,
-        trailing: true,
-        maxWait: 2000,
-      }
-    ),
     _doLayout(width: number, height: number) {
       this.updateLayoutSize({
         ...this.layoutSize,
@@ -482,10 +460,6 @@ export default defineComponent({
       }
     },
 
-    focus() {
-      this.tableRef.focus();
-    },
-
     scrollToColumn(column: TableColumnItem, position = "left") {
       const { layoutSize, leftFixedColumnWidth, rightFixedColumnWidth } = this;
       const offset = this.getColumnOffset(column);
@@ -545,6 +519,11 @@ export default defineComponent({
   },
 
   beforeDestroy() {
+    if (this.debouncedHandler) {
+    // @ts-ignore
+      this.debouncedHandler.cancel();
+      this.debouncedHandler = null;
+    }
     // @ts-ignore
     this.$destroy();
     this.resizeObserver.disconnect();
@@ -566,6 +545,19 @@ export default defineComponent({
           <table-header class={this.tableHeaderClass} />
           {this.data.length > 0 && (
             <table-body
+              onRowClick={(row: RowItemType) => {
+                this.selectRow(row);
+              }}
+              onCellClick={(_row: RowItemType, column: TableColumnItem) => {
+                this.selectedColumn = column;
+              }}
+              onRowContextmenu={(row: RowItemType) => {
+                // 如果当前行已经被选中，那么不再触发current-change事件
+                // 用于多选时可以在选中的行上使用右键菜单
+                if (!this.isRowSelected(row)) {
+                  this.selectRow(row);
+                }
+              }}
               onDragover={(e: DragEvent) => this.$emit("body-dragover", e)}
               onDrop={(e: DragEvent) => this.$emit("body-drop", e)}
             />
