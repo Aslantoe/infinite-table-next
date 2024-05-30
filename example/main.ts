@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-// import BasicUsage from './demos/basic-usage.vue';
+import BasicUsage from './demos/basic-usage.vue';
 // import Demo from './demo.vue'
 // import jsxcolumn from './demos/jsx-column.vue'
 // import customrowattrs from './demos/custom-row-attrs.vue'
@@ -12,4 +12,4 @@ import allfeatures from './demos/all-features.vue'
 import InfiniteTableNext from '../src/main'
 
 //@ts-ignore
-createApp(allfeatures).use(InfiniteTableNext).mount('#app')
+createApp(BasicUsage).use(InfiniteTableNext).mount('#app')

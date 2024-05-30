@@ -1,16 +1,37 @@
 <template>
   <div>
     <infinite-table-next
+      tableKey="a"
       row-key="id"
+      height="250px"
+      highlight-current-row
       :data="tableData"
       :table-columns="columns"
-      height="500px"
+      @current-change="handleCurrentChange"
+    ></infinite-table-next>
+    ------
+    <infinite-table-next
+      tableKey="b"
+      row-key="id"
+      height="240px"
+      highlight-current-row
+      :data="tableData"
+      :table-columns="columns"
+      @current-change="handleCurrentChange1"
     ></infinite-table-next>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
+
+const handleCurrentChange = (row) => {
+  console.log("当前行", row);
+};
+
+const handleCurrentChange1 = (row) => {
+  console.log("当前行1", row);
+};
 
 const columns = ref([
   {

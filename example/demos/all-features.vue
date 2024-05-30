@@ -6,35 +6,23 @@
     <button @click="rowFixedCancel">取消置顶</button>
     <button @click="toLastRow">滚动到最后一行</button>
     <button @click="toFirstRow">滚动到第一行</button>
-    <InfiniteTableNext
-      ref="myTable"
-      row-key="id"
-      header-height="48px"
-      row-height="45px"
-      header-resizeable
-      header-order-draggable
-      highlight-current-cell
-      highlight-current-row
-      :height="400"
-      :data="tableData"
-      :table-columns="columns"
-      :row-extra-attrs="rowExtraClass"
-      :striped="true"
-      :multiple-selection="true"
-      :top-fixed-keys="topFixedKeys"
-      @column-resize="handleColumnResize"
-      @header-drop="handleHeaderDrop"
-      @row-dblclick="handlerRowDblclick"
-      @current-change="handleCurrentChange"
-      @row-contextmenu="handleContextmenu"
-    />
+    <InfiniteTableNext ref="myTable" row-key="id" header-height="48px" row-height="45px" header-resizeable
+      header-order-draggable highlight-current-cell highlight-current-row :height="400" :data="tableData"
+      :table-columns="columns" :row-extra-attrs="rowExtraClass" :striped="true" :multiple-selection="true"
+      :top-fixed-keys="topFixedKeys" @column-resize="handleColumnResize" @header-drop="handleHeaderDrop"
+      @row-dblclick="handlerRowDblclick" @current-change="handleCurrentChange" @row-contextmenu="handleContextmenu"
+      @cell-click="handleCellClick" />
   </div>
 </template>
 
 <script setup lang="tsx">
-// :top-fixed-keys="['1', '2']"
+
 // @ts-nocheck
 import { ref } from "vue";
+
+const handleCellClick = (data, columnOption, evt, index) => {
+  console.log('cell-click', data, columnOption, evt, index);
+};
 
 const myTable = ref();
 
